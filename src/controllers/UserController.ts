@@ -57,11 +57,11 @@ export default class UserController extends BaseController {
             await user_repository.save(user)
 
             return res.status(OK).json({
-                "status": "success"
+                "status": "註冊成功"
             })
         } catch {
             return res.status(BAD_REQUEST).json({
-                "status": "fail"
+                "status": "註冊失敗"
             })
         }
 
@@ -75,11 +75,11 @@ export default class UserController extends BaseController {
 
         if (user != undefined) {
             return res.status(OK).json({
-                "status": "email has been used!"
+                "status": "email已被使用"
             })
         }
         return res.status(NOT_FOUND).json({
-            "status": "email hasn't been used!"
+            "status": "email尚未被使用"
         })
     }
 
@@ -91,11 +91,11 @@ export default class UserController extends BaseController {
 
         if (user != undefined) {
             return res.status(OK).json({
-                "status": "user exists!"
+                "status": "此帳號已被使用"
             })
         }
         return res.status(NOT_FOUND).json({
-            "status": "user doesn't exists!"
+            "status": "此帳號尚未被使用"
         })
     }
 
@@ -110,16 +110,16 @@ export default class UserController extends BaseController {
 
             if (isSuccessed) {
                 return res.status(OK).json({
-                    "status": "verification email sent"
+                    "status": "驗證信已寄出"
                 })
             }
             return res.status(500).json({
-                "status": "SMTP server shut down"
+                "status": "SMTP伺服器出錯，請聯繫server team"
             })
 
         } else {
             return res.status(NOT_FOUND).json({
-                "status": "can't find this user"
+                "status": "找不到此使用者"
             })
         }
     }
@@ -132,7 +132,7 @@ export default class UserController extends BaseController {
 
         if (user == undefined) {
             return res.status(NOT_FOUND).json({
-                "status": "can't find this user"
+                "status": "找不到此使用者"
             })
         }
 
@@ -144,7 +144,7 @@ export default class UserController extends BaseController {
         }
 
         return res.status(BAD_REQUEST).json({
-            "status": "wrong verificationToken"
+            "status": "錯誤的驗證代碼"
         })
     }
 
@@ -159,19 +159,19 @@ export default class UserController extends BaseController {
 
         if (user == undefined) {
             return res.status(NOT_FOUND).json({
-                "status": "can't find this user"
+                "status": "找不到此使用者"
             })
         }
 
         if (user.password !== util.encodeBase64(sha256(params_set.originalPassword))) {
             return res.status(FORBIDDEN).json({
-                "status": "original password wrong"
+                "status": "原始密碼錯誤"
             })
         } else {
             user.password = util.encodeBase64(sha256(params_set.newPassword))
             await user_repository.save(user)
             return res.status(OK).json({
-                "status": "password changed successfully"
+                "status": "密碼更改成功"
             })
         }
     }
@@ -184,13 +184,13 @@ export default class UserController extends BaseController {
 
         if (user === undefined) {
             return res.status(NOT_FOUND).json({
-                "status": "user not found!"
+                "status": "找不到此使用者"
             })
         }
 
         if (user?.isActive === false) {
             return res.status(FORBIDDEN).json({
-                "status": "please verify the email!"
+                "status": "請先驗證帳號"
             })
         }
 
@@ -209,7 +209,7 @@ export default class UserController extends BaseController {
         sendPasswordResetEmail(user.email, user.mailConfirmationToken, tempPassword)
 
         return res.status(OK).json({
-            "status": "password reset email sent"
+            "status": "重設密碼信已寄出"
         })
     }
 
@@ -221,7 +221,7 @@ export default class UserController extends BaseController {
 
         if (user === undefined) {
             return res.status(NOT_FOUND).json({
-                "status": "user not found!"
+                "status": "找不到此使用者"
             })
         }
 
@@ -230,7 +230,7 @@ export default class UserController extends BaseController {
             return res.redirect(passwordResetURL)
         }
         return res.status(FORBIDDEN).json({
-            "status": "Wrong verification token!"
+            "status": "錯誤的驗證代碼"
         })
     }
 
@@ -246,7 +246,7 @@ export default class UserController extends BaseController {
             userThumbnail.user = user as User
             await userThumbnail_repository.save(userThumbnail)
             return res.status(OK).json({
-                "status": "thumbnail upload success"
+                "status": "大頭貼上傳成功"
             })
         }
         return res.status(UNAUTHORIZED).json({
