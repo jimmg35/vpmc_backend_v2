@@ -14,6 +14,9 @@ import { IsEmail, IsNotEmpty, Length } from "class-validator"
 import { UserThumbnail } from "./UserThumbnail"
 
 import { Role } from "./Role"
+import { LandSheet } from "../SurveyDataSheet/LandSheet"
+import { ParkSheet } from "../SurveyDataSheet/ParkSheet"
+import { BuildingSheet } from "../SurveyDataSheet/BuildingSheet"
 
 @Entity({ name: 'user' })
 export class User {
@@ -55,4 +58,15 @@ export class User {
 
     @OneToMany(() => UserThumbnail, userthumbnail => userthumbnail.user)
     thumbnails: UserThumbnail[]
+
+    @OneToMany(() => LandSheet, landsheet => landsheet.user)
+    landSheets: LandSheet[]
+
+    @OneToMany(() => ParkSheet, parksheet => parksheet.user)
+    parkSheets: ParkSheet[]
+
+    @OneToMany(() => BuildingSheet, buildingsheet => buildingsheet.user)
+    buildingSheets: BuildingSheet[]
+
+
 }
