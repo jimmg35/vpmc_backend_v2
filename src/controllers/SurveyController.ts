@@ -299,7 +299,7 @@ export default class SurveyController extends BaseController {
         if (status) {
             const user_repository = this.dbcontext.connection.getRepository(User)
             const user = await user_repository.createQueryBuilder("user")
-                .where("user.userId = :userId", { userId: params_set._userId })
+                .where("user.userId = :userId", { userId: payload._userId })
                 .leftJoinAndSelect("user.landSheets", "landsheet")
                 .leftJoinAndSelect("user.parkSheets", "parksheet")
                 .leftJoinAndSelect("user.buildingSheets", "buildingsheet").getOne()
