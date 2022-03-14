@@ -194,7 +194,7 @@ export default class SurveyController extends BaseController {
                 parkSheet.otherRights = params_set.otherRights
                 parkSheet.assignMethod = params_set.assignMethod
                 parkSheet.landUses = params_set.landUses
-                parkSheet.buildingCoverageRatio = params_set.buildingCoverageRatio
+                parkSheet.buildingCoverageRatio = params_set.BuildingCoverageRatio
                 parkSheet.floorAreaRatio = params_set.floorAreaRatio
                 parkSheet.buildingUsage = params_set.buildingUsage
                 parkSheet.buildingStructure = params_set.buildingStructure
@@ -363,7 +363,6 @@ export default class SurveyController extends BaseController {
             landSheet.surveyDescription = params_set.surveyDescription
             landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             landSheet.photoFilesBase64 = [params_set.photoFilesBase64]
-            console.log(params_set.transcriptFileName)
             landSheet.transcriptFileName = params_set.transcriptFileName
             landSheet.photoFilesName = [params_set.photoFilesName]
             await landSheet_repository.save(landSheet)
@@ -409,7 +408,7 @@ export default class SurveyController extends BaseController {
             parkSheet.otherRights = params_set.otherRights
             parkSheet.assignMethod = params_set.assignMethod
             parkSheet.landUses = params_set.landUses
-            parkSheet.buildingCoverageRatio = params_set.buildingCoverageRatio
+            parkSheet.buildingCoverageRatio = params_set.BuildingCoverageRatio
             parkSheet.floorAreaRatio = params_set.floorAreaRatio
             parkSheet.buildingUsage = params_set.buildingUsage
             parkSheet.buildingStructure = params_set.buildingStructure
