@@ -145,6 +145,8 @@ export default class SurveyController extends BaseController {
                 landSheet.surveyDescription = params_set.surveyDescription
                 landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
                 landSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+                landSheet.transcriptFileName = params_set.transcriptFileName
+                landSheet.photoFilesName = [params_set.photoFilesName]
                 await landSheet_repository.save(landSheet)
                 return res.status(OK).json({
                     "status": "更新成功"
@@ -214,6 +216,8 @@ export default class SurveyController extends BaseController {
                 parkSheet.surveyDescription = params_set.surveyDescription
                 parkSheet.transcriptFileBase64 = params_set.transcriptFileBase64
                 parkSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+                parkSheet.transcriptFileName = params_set.transcriptFileName
+                parkSheet.photoFilesName = [params_set.photoFilesName]
                 await parkSheet_repository.save(parkSheet)
                 return res.status(OK).json({
                     "status": "更新成功"
@@ -278,6 +282,8 @@ export default class SurveyController extends BaseController {
                 buildingSheet.surveyDescription = params_set.surveyDescription
                 buildingSheet.transcriptFileBase64 = params_set.transcriptFileBase64
                 buildingSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+                buildingSheet.transcriptFileName = params_set.transcriptFileName
+                buildingSheet.photoFilesName = [params_set.photoFilesName]
                 await buildingSheet_repository.save(buildingSheet)
                 return res.status(OK).json({
                     "status": "更新成功"
@@ -357,6 +363,8 @@ export default class SurveyController extends BaseController {
             landSheet.surveyDescription = params_set.surveyDescription
             landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             landSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+            landSheet.transcriptFileName = params_set.transcriptFileName
+            landSheet.photoFilesName = [params_set.photoFilesName]
             await landSheet_repository.save(landSheet)
             return res.status(OK).json({
                 "status": "現勘表新增成功"
@@ -422,6 +430,8 @@ export default class SurveyController extends BaseController {
             parkSheet.surveyDescription = params_set.surveyDescription
             parkSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             parkSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+            parkSheet.transcriptFileName = params_set.transcriptFileName
+            parkSheet.photoFilesName = [params_set.photoFilesName]
             await parkSheet_repository.save(parkSheet)
             return res.status(OK).json({
                 "status": "現勘表新增成功"
@@ -482,6 +492,8 @@ export default class SurveyController extends BaseController {
             buildingSheet.surveyDescription = params_set.surveyDescription
             buildingSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             buildingSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+            buildingSheet.transcriptFileName = params_set.transcriptFileName
+            buildingSheet.photoFilesName = [params_set.photoFilesName]
             await buildingSheet_repository.save(buildingSheet)
             return res.status(OK).json({
                 "status": "現勘表新增成功"
