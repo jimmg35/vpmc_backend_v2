@@ -145,7 +145,7 @@ export default class SurveyController extends BaseController {
                 landSheet.surveyDescription = params_set.surveyDescription
                 landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
                 landSheet.transcriptFileName = params_set.transcriptFileName
-                landSheet.photoFilesBase64 = params_set.photoFilesBase64.split(',')
+                landSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
                 landSheet.photoFilesName = params_set.photoFilesName.split(',')
                 await landSheet_repository.save(landSheet)
                 return res.status(OK).json({
@@ -216,7 +216,7 @@ export default class SurveyController extends BaseController {
                 parkSheet.surveyDescription = params_set.surveyDescription
                 parkSheet.transcriptFileBase64 = params_set.transcriptFileBase64
                 parkSheet.transcriptFileName = params_set.transcriptFileName
-                parkSheet.photoFilesBase64 = params_set.photoFilesBase64.split(',')
+                parkSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
                 parkSheet.photoFilesName = params_set.photoFilesName.split(',')
                 await parkSheet_repository.save(parkSheet)
                 return res.status(OK).json({
@@ -282,7 +282,7 @@ export default class SurveyController extends BaseController {
                 buildingSheet.surveyDescription = params_set.surveyDescription
                 buildingSheet.transcriptFileBase64 = params_set.transcriptFileBase64
                 buildingSheet.transcriptFileName = params_set.transcriptFileName
-                buildingSheet.photoFilesBase64 = params_set.photoFilesBase64.split(',')
+                buildingSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
                 buildingSheet.photoFilesName = params_set.photoFilesName.split(',')
                 await buildingSheet_repository.save(buildingSheet)
                 return res.status(OK).json({
@@ -363,7 +363,7 @@ export default class SurveyController extends BaseController {
             landSheet.surveyDescription = params_set.surveyDescription
             landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             landSheet.transcriptFileName = params_set.transcriptFileName
-            landSheet.photoFilesBase64 = params_set.photoFilesBase64.split(',')
+            landSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
             landSheet.photoFilesName = params_set.photoFilesName.split(',')
             await landSheet_repository.save(landSheet)
             return res.status(OK).json({
@@ -430,7 +430,7 @@ export default class SurveyController extends BaseController {
             parkSheet.surveyDescription = params_set.surveyDescription
             parkSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             parkSheet.transcriptFileName = params_set.transcriptFileName
-            parkSheet.photoFilesBase64 = params_set.photoFilesBase64.split(',')
+            parkSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
             parkSheet.photoFilesName = params_set.photoFilesName.split(',')
             await parkSheet_repository.save(parkSheet)
             return res.status(OK).json({
@@ -492,7 +492,7 @@ export default class SurveyController extends BaseController {
             buildingSheet.surveyDescription = params_set.surveyDescription
             buildingSheet.transcriptFileBase64 = params_set.transcriptFileBase64
             buildingSheet.transcriptFileName = params_set.transcriptFileName
-            buildingSheet.photoFilesBase64 = params_set.photoFilesBase64.split(',')
+            buildingSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
             buildingSheet.photoFilesName = params_set.photoFilesName.split(',')
             await buildingSheet_repository.save(buildingSheet)
             return res.status(OK).json({
