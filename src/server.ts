@@ -36,11 +36,13 @@ export class Server {
      * 註冊middlewares
      */
     private addMiddlewares = (): void => {
+        this.app.use(express.urlencoded({
+            extended: true,
+            limit: '50mb'
+        }))
         this.app.use(express.urlencoded({ extended: true }))
         this.app.use(express.json())
         this.app.use(cors())
-        this.app.use(express.json({ limit: '50mb' }));
-        this.app.use(express.urlencoded({ limit: '50mb' }));
     }
 
     /**
