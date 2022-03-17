@@ -152,6 +152,17 @@ export class ParkSheet {
     @Column()
     transcriptFileBase64: string
 
+    @Column({
+        nullable: true
+    })
+    transcriptFileName: string
+
     @Column("text", { array: true })
     photoFilesBase64: string[]
+
+    @Column("text", {
+        array: true,
+        nullable: true
+    })
+    photoFilesName: string[]
 }

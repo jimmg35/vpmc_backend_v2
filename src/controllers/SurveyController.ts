@@ -144,7 +144,9 @@ export default class SurveyController extends BaseController {
                 landSheet.surveyorName = params_set.surveyorName
                 landSheet.surveyDescription = params_set.surveyDescription
                 landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
-                landSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+                landSheet.transcriptFileName = params_set.transcriptFileName
+                landSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
+                landSheet.photoFilesName = params_set.photoFilesName.split(',')
                 await landSheet_repository.save(landSheet)
                 return res.status(OK).json({
                     "status": "更新成功"
@@ -192,7 +194,7 @@ export default class SurveyController extends BaseController {
                 parkSheet.otherRights = params_set.otherRights
                 parkSheet.assignMethod = params_set.assignMethod
                 parkSheet.landUses = params_set.landUses
-                parkSheet.buildingCoverageRatio = params_set.buildingCoverageRatio
+                parkSheet.buildingCoverageRatio = params_set.BuildingCoverageRatio
                 parkSheet.floorAreaRatio = params_set.floorAreaRatio
                 parkSheet.buildingUsage = params_set.buildingUsage
                 parkSheet.buildingStructure = params_set.buildingStructure
@@ -213,7 +215,9 @@ export default class SurveyController extends BaseController {
                 parkSheet.surveyorName = params_set.surveyorName
                 parkSheet.surveyDescription = params_set.surveyDescription
                 parkSheet.transcriptFileBase64 = params_set.transcriptFileBase64
-                parkSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+                parkSheet.transcriptFileName = params_set.transcriptFileName
+                parkSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
+                parkSheet.photoFilesName = params_set.photoFilesName.split(',')
                 await parkSheet_repository.save(parkSheet)
                 return res.status(OK).json({
                     "status": "更新成功"
@@ -277,7 +281,9 @@ export default class SurveyController extends BaseController {
                 buildingSheet.surveyorName = params_set.surveyorName
                 buildingSheet.surveyDescription = params_set.surveyDescription
                 buildingSheet.transcriptFileBase64 = params_set.transcriptFileBase64
-                buildingSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+                buildingSheet.transcriptFileName = params_set.transcriptFileName
+                buildingSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
+                buildingSheet.photoFilesName = params_set.photoFilesName.split(',')
                 await buildingSheet_repository.save(buildingSheet)
                 return res.status(OK).json({
                     "status": "更新成功"
@@ -299,7 +305,7 @@ export default class SurveyController extends BaseController {
         if (status) {
             const user_repository = this.dbcontext.connection.getRepository(User)
             const user = await user_repository.createQueryBuilder("user")
-                .where("user.userId = :userId", { userId: params_set._userId })
+                .where("user.userId = :userId", { userId: payload._userId })
                 .leftJoinAndSelect("user.landSheets", "landsheet")
                 .leftJoinAndSelect("user.parkSheets", "parksheet")
                 .leftJoinAndSelect("user.buildingSheets", "buildingsheet").getOne()
@@ -356,7 +362,9 @@ export default class SurveyController extends BaseController {
             landSheet.surveyorName = params_set.surveyorName
             landSheet.surveyDescription = params_set.surveyDescription
             landSheet.transcriptFileBase64 = params_set.transcriptFileBase64
-            landSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+            landSheet.transcriptFileName = params_set.transcriptFileName
+            landSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
+            landSheet.photoFilesName = params_set.photoFilesName.split(',')
             await landSheet_repository.save(landSheet)
             return res.status(OK).json({
                 "status": "現勘表新增成功"
@@ -400,7 +408,7 @@ export default class SurveyController extends BaseController {
             parkSheet.otherRights = params_set.otherRights
             parkSheet.assignMethod = params_set.assignMethod
             parkSheet.landUses = params_set.landUses
-            parkSheet.buildingCoverageRatio = params_set.buildingCoverageRatio
+            parkSheet.buildingCoverageRatio = params_set.BuildingCoverageRatio
             parkSheet.floorAreaRatio = params_set.floorAreaRatio
             parkSheet.buildingUsage = params_set.buildingUsage
             parkSheet.buildingStructure = params_set.buildingStructure
@@ -421,7 +429,9 @@ export default class SurveyController extends BaseController {
             parkSheet.surveyorName = params_set.surveyorName
             parkSheet.surveyDescription = params_set.surveyDescription
             parkSheet.transcriptFileBase64 = params_set.transcriptFileBase64
-            parkSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+            parkSheet.transcriptFileName = params_set.transcriptFileName
+            parkSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
+            parkSheet.photoFilesName = params_set.photoFilesName.split(',')
             await parkSheet_repository.save(parkSheet)
             return res.status(OK).json({
                 "status": "現勘表新增成功"
@@ -481,7 +491,9 @@ export default class SurveyController extends BaseController {
             buildingSheet.surveyorName = params_set.surveyorName
             buildingSheet.surveyDescription = params_set.surveyDescription
             buildingSheet.transcriptFileBase64 = params_set.transcriptFileBase64
-            buildingSheet.photoFilesBase64 = [params_set.photoFilesBase64]
+            buildingSheet.transcriptFileName = params_set.transcriptFileName
+            buildingSheet.photoFilesBase64 = JSON.parse(params_set.photoFilesBase64)
+            buildingSheet.photoFilesName = params_set.photoFilesName.split(',')
             await buildingSheet_repository.save(buildingSheet)
             return res.status(OK).json({
                 "status": "現勘表新增成功"

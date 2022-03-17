@@ -13,10 +13,10 @@ import { container } from "tsyringe"
 (async () => {
 
     // 輸入資料
-    const seeder = container.resolve(Seeder)
-    await seeder.dbcontext.connect()
-    await seeder.seedRole()
-    await seeder.dbcontext.connection.close()
+    // const seeder = container.resolve(Seeder)
+    // await seeder.dbcontext.connect()
+    // await seeder.seedRole()
+    // await seeder.dbcontext.connection.close()
 
     // 註冊controllers
     const homeController = container.resolve(HomeController)
