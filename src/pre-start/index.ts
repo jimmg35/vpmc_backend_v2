@@ -5,21 +5,21 @@ import commandLineArgs from 'command-line-args'
 
 
 (() => {
-    const options = commandLineArgs([
-        {
-            name: 'env',
-            alias: 'e',
-            defaultValue: 'development',
-            type: String,
-        }
-    ])
-
-    const envConfig = dotenv.config({
-        path: path.join(__dirname, `../../envConfig/production.env`),
-    })
-
-    if (envConfig.error) {
-        throw envConfig.error;
+  const options = commandLineArgs([
+    {
+      name: 'env',
+      alias: 'e',
+      defaultValue: 'development',
+      type: String,
     }
+  ])
+
+  const envConfig = dotenv.config({
+    path: path.join(__dirname, `../../envConfig/production.env`),
+  })
+
+  if (envConfig.error) {
+    throw envConfig.error;
+  }
 })();
 

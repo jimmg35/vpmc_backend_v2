@@ -4,11 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watchts": "tsc -w",
-    "start:dev": "nodemon ./build/service.js --env=development",
-    "start:pro": "nodemon ./build/service.js --env=production",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd build & dir /b /a-d"
+    "start": "nodemon src/service.ts",
+    "migrate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -n migration",
+    "update": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run"
   },
   "author": "",
   "license": "ISC",
