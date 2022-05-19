@@ -12,3 +12,8 @@ export interface IListCommiteeByExtent {
   xmax?: number
   ymax?: number
 }
+
+export interface IGetSimpleInfo {
+  commiteeId?: string
+  bufferRadius?: number
+}

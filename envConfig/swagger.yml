@@ -141,3 +141,35 @@ paths:
               schema: 
                 type: array
     
+  /Commitee/getSimpleInfo:
+    get:
+      tags: 
+        - Commitee
+      summary: 查詢社區半徑範圍內的平均單位價格(元/平方公尺).
+      description: 現在只有新北市10年份的資料
+      parameters:
+
+        - in: query
+          name: commiteeId
+          required: true
+          default: 836bf30d-e426-49df-856f-ffb05eef7d5d
+          schema:
+            type: string
+          description: 管委會id
+
+        - in: query
+          name: bufferRadius
+          required: true
+          default: 150
+          schema:
+            type: number
+          description: 搜尋半徑
+
+      responses:
+        '200':    # status code
+          description: 該社區半徑範圍內的單位均價
+          content:
+            application/json:
+              schema: 
+                type: object
+  

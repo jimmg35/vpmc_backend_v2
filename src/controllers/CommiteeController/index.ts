@@ -4,7 +4,7 @@ import { PostgreSQLContext } from "../../dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
-import { IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
+import { IGetSimpleInfo, IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
 
 const { OK } = StatusCodes
 
@@ -16,6 +16,7 @@ export default class CommiteeController extends BaseController {
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "listTownAvg": "GET",
     "listCommiteeByExtent": "GET",
+    "getSimpleInfo": "GET",
     "post": "POST"
   }
 
@@ -30,7 +31,7 @@ export default class CommiteeController extends BaseController {
     const props: IListTownAvgProps = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.listTownAvg.format(
-        [props.county!, props.town!, props.startDate!, props.endDate!]
+        [props.county, props.town, props.startDate, props.endDate]
       )
     )
     result[0].county = props.county
@@ -42,10 +43,20 @@ export default class CommiteeController extends BaseController {
     const props: IListCommiteeByExtent = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.listCommiteeByExtent.format(
-        [props.xmin!, props.ymin!, props.xmax!, props.ymax!]
+        [props.xmin, props.ymin, props.xmax, props.ymax]
       )
     )
     return res.status(OK).json(result)
+  }
+
+  public getSimpleInfo = async (req: Request, res: Response) => {
+    const props: IGetSimpleInfo = { ...req.query }
+    const result = await this.dbcontext.connection.query(
+      this.queryStringStorer.commitee.getSimpleInfo.format(
+        [props.commiteeId, props.bufferRadius]
+      )
+    )
+    return res.status(OK).json(result[0])
   }
 
   public post = async (req: Request, res: Response) => {
