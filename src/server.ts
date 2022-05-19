@@ -9,7 +9,7 @@ import { autoInjectSubRoutes } from './controllers/BaseController'
 import swaggerUi from 'swagger-ui-express'
 import YAML from 'yamljs'
 
-const swaggerDocument = YAML.load(path.resolve(__dirname, './swagger.yml'))
+const swaggerDocument = YAML.load(path.resolve(__dirname, '../envConfig/swagger.yml'))
 
 interface IServerParam {
   controllers: Array<IController>

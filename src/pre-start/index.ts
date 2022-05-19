@@ -26,7 +26,7 @@ import commandLineArgs from 'command-line-args'
 
 declare global {
   interface String {
-    format (args: string[]): string
+    format (args: any[]): string
   }
 }
 

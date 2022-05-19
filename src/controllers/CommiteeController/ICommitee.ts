@@ -5,3 +5,10 @@ export interface IListTownAvgProps {
   startDate?: string
   endDate?: string
 }
+
+export interface IListCommiteeByExtent {
+  xmin?: number
+  ymin?: number
+  xmax?: number
+  ymax?: number
+}

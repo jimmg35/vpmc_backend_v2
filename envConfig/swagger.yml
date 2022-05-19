@@ -1,0 +1,143 @@
+openapi: 3.0.0
+
+info:
+  title: VPMC API
+  description: vpmc RESTful API in Node.js with TypeScript.
+  version: 0.1.9
+
+servers:
+  - url: http://localhost:9085/api
+    description: Testing local server
+
+paths:
+
+  /Auth/authenticate:
+    post:
+      tags: 
+        - Auth
+      summary: 使用者驗證.
+      consumes:
+        - application/x-www-form-urlencoded
+      description: 於登入時使用
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+
+                email:
+                  required: true
+                  default: jim60308@gmail.com
+                  type: string
+                  description: 電子郵件
+                
+                password:
+                  required: true
+                  default: T3iSQkjwLFooeeqWQpY9OFEuMTaaKVzGC81jpYcMRqc=
+                  type: string
+                  description: 密碼
+      responses:
+        '200':    # status code
+          description: accessToken
+          content:
+            application/json:
+              schema: 
+                type: object
+
+  /Commitee/listTownAvg:
+    get:
+      tags: 
+        - Commitee
+      summary: 查詢鄉鎮市區單位價格(元/平方公尺).
+      description: 現在只有新北市10年份的資料
+      parameters:
+
+        - in: query
+          name: county
+          required: true
+          default: 新北市
+          schema:
+            type: string
+          description: 縣市
+
+        - in: query
+          name: town
+          required: true
+          default: 林口區
+          schema:
+            type: string
+          description: 鄉鎮市區
+
+        - in: query
+          name: startDate
+          required: true
+          default: 2021-01-01
+          schema:
+            type: string
+          description: yyyy-mm-dd
+
+        - in: query
+          name: endDate
+          required: true
+          default: 2022-01-01
+          schema:
+            type: string
+          description: yyyy-mm-dd
+
+      responses:
+        '200':    # status code
+          description: 該鄉鎮的單位均價
+          content:
+            application/json:
+              schema: 
+                type: object
+  
+  /Commitee/listCommiteeByExtent:
+    get:
+      tags: 
+        - Commitee
+      summary: 列出方框範圍內的管委會資料.
+      description: 現在只有新北市10年份的資料
+      parameters:
+
+        - in: query
+          name: xmin
+          required: true
+          default: 121.45344870570658
+          schema:
+            type: number
+          description: 最小經度
+
+        - in: query
+          name: ymin
+          required: true
+          default: 25.004733928174055
+          schema:
+            type: number
+          description: 最小緯度
+
+        - in: query
+          name: xmax
+          required: true
+          default: 121.4697565351926
+          schema:
+            type: number
+          description: 最大經度
+        
+        - in: query
+          name: ymax
+          required: true
+          default: 25.012356721844185
+          schema:
+            type: number
+          description: 最大緯度
+
+      responses:
+        '200':    # status code
+          description: 範圍內的所有社區資料
+          content:
+            application/json:
+              schema: 
+                type: array
+    

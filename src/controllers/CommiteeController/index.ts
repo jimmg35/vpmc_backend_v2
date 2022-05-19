@@ -4,7 +4,7 @@ import { PostgreSQLContext } from "../../dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
-import { IListTownAvgProps } from "./ICommitee"
+import { IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
 
 const { OK } = StatusCodes
 
@@ -15,6 +15,7 @@ export default class CommiteeController extends BaseController {
   public dbcontext: PostgreSQLContext
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "listTownAvg": "GET",
+    "listCommiteeByExtent": "GET",
     "post": "POST"
   }
 
@@ -34,6 +35,16 @@ export default class CommiteeController extends BaseController {
     )
     result[0].county = props.county
     result[0].town = props.town
+    return res.status(OK).json(result[0])
+  }
+
+  public listCommiteeByExtent = async (req: Request, res: Response) => {
+    const props: IListCommiteeByExtent = { ...req.query }
+    const result = await this.dbcontext.connection.query(
+      this.queryStringStorer.commitee.listCommiteeByExtent.format(
+        [props.xmin!, props.ymin!, props.xmax!, props.ymax!]
+      )
+    )
     return res.status(OK).json(result)
   }
 

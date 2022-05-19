@@ -7,9 +7,11 @@ import {
   CommiteeController
 } from './controllers'
 import { container } from 'tsyringe'
-import open from 'open'
+import sha256 from "fast-sha256"
+import util from "tweetnacl-util"
 
 (async () => {
+  // console.log(util.encodeBase64(sha256('Jim60308#' as any)))
 
   // 註冊controllers
   const homeController = container.resolve(HomeController)
