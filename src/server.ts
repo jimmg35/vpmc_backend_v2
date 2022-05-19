@@ -6,6 +6,10 @@ import https from 'https'
 import express, { Router } from 'express'
 import { IController } from './controllers/BaseController'
 import { autoInjectSubRoutes } from './controllers/BaseController'
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
+
+const swaggerDocument = YAML.load(path.resolve(__dirname, './swagger.yml'))
 
 interface IServerParam {
   controllers: Array<IController>
@@ -45,6 +49,7 @@ export class Server {
       limit: '50mb'
     }))
     this.app.use(cors())
+    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
   }
 
   /**
@@ -75,10 +80,12 @@ export class Server {
         cert: fs.readFileSync(path.join(__dirname, `../envConfig/https/agent2-cert.pem`))
       }, this.app).listen(this.app.get("port"), () => {
         console.log(`server is listening at ${process.env.PROTOCOL}://${process.env.DOMAIN_NAME}:${this.app.get('port')}`)
+        console.log(`swagger is listening at ${process.env.PROTOCOL}://${process.env.DOMAIN_NAME}:${this.app.get('port')}/api/docs`)
       })
     } else {
       this.app.listen(this.app.get("port"), () => {
         console.log(`server is listening at ${process.env.PROTOCOL}://${process.env.DOMAIN_NAME}:${this.app.get('port')}`)
+        console.log(`swagger is listening at ${process.env.PROTOCOL}://${process.env.DOMAIN_NAME}:${this.app.get('port')}/api/docs`)
       })
     }
   }
