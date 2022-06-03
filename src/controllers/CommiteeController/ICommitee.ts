@@ -17,3 +17,8 @@ export interface IGetSimpleInfo {
   commiteeId?: string
   bufferRadius?: number
 }
+
+export interface IGetAprInfo {
+  commiteeId?: string
+  bufferRadius?: number
+}

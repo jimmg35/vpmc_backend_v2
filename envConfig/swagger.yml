@@ -8,6 +8,8 @@ info:
 servers:
   - url: http://localhost:9085/api
     description: Testing local server
+  - url: http://140.122.82.98:9085/api
+    description: Production server
 
 paths:
 
@@ -97,7 +99,7 @@ paths:
     get:
       tags: 
         - Commitee
-      summary: 列出方框範圍內的管委會資料.
+      summary: 列出方框範圍內的基本管委會資料.
       description: 現在只有新北市10年份的資料
       parameters:
 
@@ -145,7 +147,7 @@ paths:
     get:
       tags: 
         - Commitee
-      summary: 查詢社區半徑範圍內的平均單位價格(元/平方公尺).
+      summary: 查詢社區半徑範圍內的實價交易數量、完工日期、建物型態、平均單位價格(元/平方公尺).
       description: 現在只有新北市10年份的資料
       parameters:
 
@@ -160,14 +162,14 @@ paths:
         - in: query
           name: bufferRadius
           required: true
-          default: 150
+          default: 35
           schema:
             type: number
           description: 搜尋半徑
 
       responses:
         '200':    # status code
-          description: 該社區半徑範圍內的單位均價
+          description: 該社區半徑範圍內的實價交易數量、完工日期、建物型態、平均單位價格(元/平方公尺).
           content:
             application/json:
               schema: 

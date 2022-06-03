@@ -7,6 +7,7 @@ interface ICommiteeStringMap extends IStringMap {
   listTownAvg: string
   listCommiteeByExtent: string
   getSimpleInfo: string
+  getAprInfo: string
 }
 
 export default class QueryStringStorer {
@@ -54,6 +55,26 @@ export default class QueryStringStorer {
         WHERE 
           co.id = '{0}'
           AND ST_Buffer(co.coordinate, {1}) && ap.coordinate
+      `,
+      getAprInfo: `
+        SELECT 
+          ap."transactionTime",
+          ap."transferFloor",
+          ap."unitPrice",
+          ap."priceWithoutParking",
+          ap."roomNumber",
+          ap."hallNumber",
+          ap."bathNumber",
+          ap."buildingTransferArea",
+          ap."parkingSpacePrice",
+          ap."parkingSpaceTransferArea",
+          ap."price"
+        FROM 
+          commitee co, 
+          apr ap
+        WHERE 
+          co.id = '{0}'
+          AND ST_Buffer(co.coordinate, {1}) && ap.coordinate;
       `
     }
   }

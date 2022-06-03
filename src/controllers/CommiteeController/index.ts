@@ -4,7 +4,7 @@ import { PostgreSQLContext } from "../../dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
-import { IGetSimpleInfo, IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
+import { IGetAprInfo, IGetSimpleInfo, IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
 
 const { OK } = StatusCodes
 
@@ -17,7 +17,8 @@ export default class CommiteeController extends BaseController {
     "listTownAvg": "GET",
     "listCommiteeByExtent": "GET",
     "getSimpleInfo": "GET",
-    "post": "POST"
+    "post": "POST",
+    "getAprInfo": "GET"
   }
 
   constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
@@ -57,6 +58,16 @@ export default class CommiteeController extends BaseController {
       )
     )
     return res.status(OK).json(result[0])
+  }
+
+  public getAprInfo = async (req: Request, res: Response) => {
+    const props: IGetAprInfo = { ...req.query }
+    const result = await this.dbcontext.connection.query(
+      this.queryStringStorer.commitee.getAprInfo.format(
+        [props.commiteeId, 35]
+      )
+    )
+    return res.status(OK).json(result)
   }
 
   public post = async (req: Request, res: Response) => {
