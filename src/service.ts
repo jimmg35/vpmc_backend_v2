@@ -4,7 +4,8 @@ import {
   UserController,
   AuthController,
   SurveyController,
-  CommiteeController
+  CommiteeController,
+  AprController
 } from './controllers'
 import { container } from 'tsyringe'
 import sha256 from "fast-sha256"
@@ -19,6 +20,7 @@ import util from "tweetnacl-util"
   const authController = container.resolve(AuthController)
   const surveyController = container.resolve(SurveyController)
   const commiteeController = container.resolve(CommiteeController)
+  const aprController = container.resolve(AprController)
 
   const server = new Server({
     controllers: [
@@ -26,7 +28,8 @@ import util from "tweetnacl-util"
       userController,
       authController,
       surveyController,
-      commiteeController
+      commiteeController,
+      aprController
     ]
   })
 

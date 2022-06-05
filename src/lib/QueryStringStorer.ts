@@ -10,8 +10,13 @@ interface ICommiteeStringMap extends IStringMap {
   getAprInfo: string
 }
 
+interface IAprStringMap extends IStringMap {
+  getTownInfo: string
+}
+
 export default class QueryStringStorer {
   public commitee: ICommiteeStringMap
+  public apr: IAprStringMap
 
   constructor() {
     this.commitee = {
@@ -75,6 +80,23 @@ export default class QueryStringStorer {
         WHERE 
           co.id = '{0}'
           AND ST_Buffer(co.coordinate, {1}) && ap.coordinate;
+      `
+    }
+    this.apr = {
+      getTownInfo: `
+        SELECT 
+          ap."buildingType",
+          ap."priceWithoutParking",
+          ap."unitPrice",
+          ap."completionTime",
+          ap."transactionTime"
+        FROM 
+          apr ap, 
+          taiwan_map ta
+        WHERE 
+          ta.countyname = '{0}'
+          AND ta.townname = '{1}' 
+          AND ap.coordinate && ta.geom ORDER BY ap."transactionTime";
       `
     }
   }

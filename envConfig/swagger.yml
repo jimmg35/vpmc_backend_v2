@@ -3,7 +3,6 @@ openapi: 3.0.0
 info:
   title: VPMC API
   description: vpmc RESTful API in Node.js with TypeScript.
-  version: 0.1.9
 
 servers:
   - url: http://localhost:9085/api
@@ -175,3 +174,58 @@ paths:
               schema: 
                 type: object
   
+  /Commitee/getAprInfo:
+    get:
+      tags: 
+        - Commitee
+      summary: 用管委會id查詢實價登陸交易紀錄.
+      description: 現在只有新北市10年份的資料
+      parameters:
+
+        - in: query
+          name: commiteeId
+          required: true
+          default: 52daa333-6e71-4dfd-a70d-97e7dd0cde2d
+          schema:
+            type: string
+          description: 管委會id
+
+      responses:
+        '200':    # status code
+          description: 該社區的所有實價登陸交易紀錄.
+          content:
+            application/json:
+              schema: 
+                type: object
+
+  /Apr/getTownInfo:
+    get:
+      tags: 
+        - Apr
+      summary: 查詢鄉鎮市區的實價登陸資料，並且計算統計結果.
+      description: 注意! 有些區的資料量過大，所以在swagger上會一直轉圈。
+      parameters:
+
+        - in: query
+          name: county
+          required: true
+          default: 新北市
+          schema:
+            type: string
+          description: 縣市
+
+        - in: query
+          name: town
+          required: true
+          default: 金山區
+          schema:
+            type: string
+          description: 鄉鎮市區
+
+      responses:
+        '200':    # status code
+          description: 該行政區的實價登陸資料，依照建物型態與交易年分計算統計結果.
+          content:
+            application/json:
+              schema: 
+                type: object

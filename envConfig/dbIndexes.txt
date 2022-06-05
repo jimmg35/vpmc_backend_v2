@@ -1,0 +1,15 @@
+CREATE INDEX license_index ON license ("licenseYear", "licenseCode");
+CREATE INDEX taiwan_map_index_attribute on taiwan_map (countyname, townname, villname);
+CREATE INDEX taiwan_map_index_spatial ON taiwan_map USING GIST (geom);
+CREATE INDEX apr_index_attribute ON apr ("transactionTime", "unitPrice", price);
+CREATE INDEX apr_index_spatial ON apr USING GIST(coordinate);
+CREATE INDEX commitee_index_attribute ON commitee (date);
+CREATE INDEX commitee_index_spatial ON commitee USING GIST (coordinate);
+
+DROP INDEX IF EXISTS license_index;
+DROP INDEX IF EXISTS taiwan_map_index_attribute;
+DROP INDEX IF EXISTS taiwan_map_index_spatial;
+DROP INDEX IF EXISTS apr_index_attribute;
+DROP INDEX IF EXISTS apr_index_spatial;
+DROP INDEX IF EXISTS commitee_index_attribute;
+DROP INDEX IF EXISTS commitee_index_spatial;
