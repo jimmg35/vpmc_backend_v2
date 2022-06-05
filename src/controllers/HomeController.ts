@@ -10,30 +10,30 @@ const { OK } = StatusCodes
 export default class HomeController extends BaseController {
 
 
-    public dbcontext: PostgreSQLContext
-    public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
-        "get": "GET",
-        "post": "POST"
-    }
+  public dbcontext: PostgreSQLContext
+  public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
+    "get": "GET",
+    "post": "POST"
+  }
 
-    constructor(dbcontext: PostgreSQLContext) {
-        super()
-        this.dbcontext = dbcontext
-        this.dbcontext.connect()
-    }
+  constructor(dbcontext: PostgreSQLContext) {
+    super()
+    this.dbcontext = dbcontext
+    this.dbcontext.connect()
+  }
 
-    public get = async (req: Request, res: Response) => {
-        const params_set = { ...req.query }
-        return res.status(OK).json({
-            ...params_set
-        })
-    }
+  public get = async (req: Request, res: Response) => {
+    const params_set = { ...req.query }
+    return res.status(OK).json({
+      ...params_set
+    })
+  }
 
-    public post = async (req: Request, res: Response) => {
-        const params_set = { ...req.body }
-        return res.status(OK).json({
-            ...params_set
-        })
-    }
+  public post = async (req: Request, res: Response) => {
+    const params_set = { ...req.body }
+    return res.status(OK).json({
+      ...params_set
+    })
+  }
 
 }
