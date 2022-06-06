@@ -30,6 +30,42 @@ export default class AuthController extends BaseController {
     this.jwtAuthenticator = jwtAuthenticator
   }
 
+  /**
+   * @swagger
+   * /Auth/authenticate:
+   *   post:
+   *     tags: 
+   *       - Auth
+   *     summary: 使用者驗證.
+   *     consumes:
+   *       - application/x-www-form-urlencoded
+   *     description: 於登入時使用
+   *     requestBody:
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *
+   *               email:
+   *                 required: true
+   *                 default: jim60308@gmail.com
+   *                 type: string
+   *                 description: 電子郵件
+   *             
+   *               password:
+   *                 required: true
+   *                 default: T3iSQkjwLFooeeqWQpY9OFEuMTaaKVzGC81jpYcMRqc=
+   *                 type: string
+   *                 description: 密碼
+   *     responses:
+   *       '200':    # status code
+   *         description: accessToken
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   */
   public authenticate = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
 

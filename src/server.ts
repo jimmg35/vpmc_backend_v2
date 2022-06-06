@@ -8,8 +8,16 @@ import { IController } from './controllers/BaseController'
 import { autoInjectSubRoutes } from './controllers/BaseController'
 import swaggerUi from 'swagger-ui-express'
 import YAML from 'yamljs'
+import swaggerDefinitionFile from '../envConfig/swaggerDefinition.json'
+import swaggerJSDoc from 'swagger-jsdoc'
 
-const swaggerDocument = YAML.load(path.resolve(__dirname, '../envConfig/swagger.yml'))
+const options = {
+  swaggerDefinition: swaggerDefinitionFile,
+  apis: ['src/controllers/**/*.ts']
+}
+const swaggerSpec = swaggerJSDoc(options)
+
+// const swaggerDocument = YAML.load(path.resolve(__dirname, '../envConfig/swagger.yml'))
 
 interface IServerParam {
   controllers: Array<IController>
@@ -49,7 +57,8 @@ export class Server {
       limit: '50mb'
     }))
     this.app.use(cors())
-    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+    // this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
   }
 
   /**

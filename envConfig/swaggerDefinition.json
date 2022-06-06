@@ -1,0 +1,18 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "VPMC EXPRESS API",
+        "version": "1.0.0",
+        "description": "vpmc RESTful API in Node.js with TypeScript."
+    },
+    "servers": [
+        {
+            "url": "http://localhost:9085/api",
+            "description": "Development server"
+        },
+        {
+            "url": "http://140.122.82.98:9085/api",
+            "description": "Production server"
+        }
+    ]
+}
