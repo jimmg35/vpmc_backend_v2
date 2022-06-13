@@ -14,9 +14,16 @@ interface IAprStringMap extends IStringMap {
   getTownInfo: string
 }
 
+interface IUtilityMap extends IStringMap {
+  listCountiesByRegion: string
+  listTownsByCounty: string
+  getVillageGeographyByTown: string
+}
+
 export default class QueryStringStorer {
   public commitee: ICommiteeStringMap
   public apr: IAprStringMap
+  public utility: IUtilityMap
 
   constructor() {
     this.commitee = {
@@ -99,6 +106,27 @@ export default class QueryStringStorer {
           AND ap.coordinate && ta.geom ORDER BY ap."transactionTime";
       `
     }
+    this.utility = {
+      listCountiesByRegion: `
+        SELECT DISTINCT countyname FROM "taiwan_map"
+      `,
+      listTownsByCounty: `
+        SELECT DISTINCT townname FROM "taiwan_map" WHERE countyname = '{0}'
+      `,
+      getVillageGeographyByTown: `
+        SELECT
+          json_build_object(
+            'type', 'FeatureCollection',
+            'features', json_agg(ST_AsGeoJSON(t.*)::json)
+          )
+        FROM 
+          (
+            SELECT
+              villname,
+              geom
+            FROM "taiwan_map" WHERE countyname = '{0}' AND townname = '{1}'
+          ) AS t
+        `
+    }
   }
-
 }
