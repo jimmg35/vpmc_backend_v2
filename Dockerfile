@@ -11,7 +11,8 @@ COPY . .
 
 RUN yarn
 RUN npm install typescript -g
-RUN tsc
+RUN npm install ts-node -g
+RUN npm install nodemon -g
 
 EXPOSE 9085
-CMD ["node", "./build/service.js"]
+CMD ["nodemon", "./src/service.ts"]

@@ -27,6 +27,40 @@ export default class AprController extends BaseController {
   }
 
 
+  /**
+   * @swagger
+   * /Apr/getTownInfo:
+   *   get:
+   *     tags: 
+   *       - Apr
+   *     summary: 地區總體
+   *     description: 查詢鄉鎮市區的實價登陸資料，並且計算統計結果. 注意! 有些區的資料量過大，所以在swagger上會一直轉圈。
+   *     parameters:
+   *
+   *       - in: query
+   *         name: county
+   *         required: true
+   *         default: 新北市
+   *         schema:
+   *           type: string
+   *         description: 縣市
+   *
+   *       - in: query
+   *         name: town
+   *         required: true
+   *         default: 金山區
+   *         schema:
+   *           type: string
+   *         description: 鄉鎮市區
+   *
+   *     responses:
+   *       '200':    # status code
+   *         description: 該行政區的實價登陸資料，依照建物型態與交易年分計算統計結果.
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   */
   public getTownInfo = async (req: Request, res: Response) => {
     const props: IGetTownInfo = { ...req.query }
 

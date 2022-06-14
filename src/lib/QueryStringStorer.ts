@@ -14,9 +14,22 @@ interface IAprStringMap extends IStringMap {
   getTownInfo: string
 }
 
+interface IUtilityMap extends IStringMap {
+  listCountiesByRegion: string
+  listTownsByCounty: string
+  getVillageGeographyByTown: string
+}
+
+interface IAnalysisMap extends IStringMap {
+  marketCompare: string
+  marketCompareStatistic: string
+}
+
 export default class QueryStringStorer {
   public commitee: ICommiteeStringMap
   public apr: IAprStringMap
+  public utility: IUtilityMap
+  public analysis: IAnalysisMap
 
   constructor() {
     this.commitee = {
@@ -99,6 +112,60 @@ export default class QueryStringStorer {
           AND ap.coordinate && ta.geom ORDER BY ap."transactionTime";
       `
     }
+    this.utility = {
+      listCountiesByRegion: `
+        SELECT DISTINCT countyname FROM "taiwan_map"
+      `,
+      listTownsByCounty: `
+        SELECT DISTINCT townname FROM "taiwan_map" WHERE countyname = '{0}'
+      `,
+      getVillageGeographyByTown: `
+        SELECT
+          json_build_object(
+            'type', 'FeatureCollection',
+            'features', json_agg(ST_AsGeoJSON(t.*)::json)
+          )
+        FROM 
+          (
+            SELECT
+              villname,
+              geom
+            FROM "taiwan_map" WHERE countyname = '{0}' AND townname = '{1}'
+          ) AS t
+        `
+    }
+    this.analysis = {
+      marketCompare: `
+        SELECT
+          ap."transactionTime" as transactionTime,
+          ap."completionTime" as completionTime,
+          ap."transferFloor",
+          ap."unitPrice",
+          ap."priceWithoutParking",
+          ap."roomNumber",
+          ap."hallNumber",
+          ap."bathNumber",
+          ap."buildingTransferArea",
+          ap."parkingSpacePrice",
+          ap."parkingSpaceTransferArea",
+          ap."price",
+          ST_X(ap.coordinate::geometry) as longitude,
+          ST_Y(ap.coordinate::geometry) as latitude 
+        FROM 
+          apr ap
+        WHERE
+      `,
+      marketCompareStatistic: `
+        SELECT
+          ap."buildingType",
+          ap."priceWithoutParking",
+          ap."unitPrice",
+          ap."transactionTime" as transactionTime,
+          ap."completionTime" as completionTime
+        FROM 
+          apr ap
+        WHERE
+      `
+    }
   }
-
 }
