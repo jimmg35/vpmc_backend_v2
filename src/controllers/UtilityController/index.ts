@@ -6,7 +6,7 @@ import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
 import { IListTownsByCounty } from "./IUtility"
 
-const { OK } = StatusCodes
+const { OK, NOT_FOUND } = StatusCodes
 
 @autoInjectable()
 export default class UtilityController extends BaseController {
@@ -16,7 +16,8 @@ export default class UtilityController extends BaseController {
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "listCountiesByRegion": "GET",
     "listTownsByCounty": "GET",
-    "getVillageGeographyByTown": "GET"
+    "getVillageGeographyByTown": "GET",
+    "getCountyTownNameByCoordinate": "GET"
   }
 
   constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
@@ -189,6 +190,51 @@ export default class UtilityController extends BaseController {
       )
     )
     return res.status(OK).json(result[0]["json_build_object"])
+  }
+
+  /**
+   * @swagger
+   * /Utility/getCountyTownNameByCoordinate:
+   *   get:
+   *     tags: 
+   *       - Utility
+   *     summary: 給予經緯度，取得行政區與鄉鎮市區名稱
+   *     parameters:
+   *       - in: query
+   *         name: longitude
+   *         required: true
+   *         default: 121
+   *         schema:
+   *           type: number
+   *         description: 經度
+   *       - in: query
+   *         name: latitude
+   *         required: true
+   *         default: 24
+   *         schema:
+   *           type: number
+   *         description: 緯度
+   *     responses:
+   *       '200':    # status code
+   *         description: 行政區與鄉鎮市區名稱
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   */
+  public getCountyTownNameByCoordinate = async (req: Request, res: Response) => {
+    const props = { ...req.query } as unknown as { longitude: number, latitude: number }
+    const result = await this.dbcontext.connection.query(
+      this.queryStringStorer.utility.getCountyTownNameByCoordinate.format(
+        [props.longitude, props.latitude]
+      )
+    )
+    if (result.length !== 0) {
+      return res.status(OK).json(result[0])
+    } else {
+      return res.status(NOT_FOUND).json({})
+    }
+
   }
 
 }
