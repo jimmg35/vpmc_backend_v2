@@ -33,8 +33,8 @@ export default class AprController extends BaseController {
    *   get:
    *     tags: 
    *       - Apr
-   *     summary: 查詢鄉鎮市區的實價登陸資料，並且計算統計結果.
-   *     description: 注意! 有些區的資料量過大，所以在swagger上會一直轉圈。
+   *     summary: 地區總體
+   *     description: 查詢鄉鎮市區的實價登陸資料，並且計算統計結果. 注意! 有些區的資料量過大，所以在swagger上會一直轉圈。
    *     parameters:
    *
    *       - in: query
