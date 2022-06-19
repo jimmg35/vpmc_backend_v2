@@ -1,10 +1,13 @@
 
 export interface IMarketCompare {
-  longitude: number
-  latitude: number
-  bufferRadius: number
 
   buildingType: number
+
+  longitude?: number
+  latitude?: number
+  bufferRadius?: number
+
+  geojson?: string
 
   transactionTimeStart?: string
   transactionTimeEnd?: string

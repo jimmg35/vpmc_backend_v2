@@ -157,12 +157,22 @@ export default class AnalysisController extends BaseController {
       latitude: number
     }
     let queryString = this.queryStringStorer.analysis.marketCompare
-    let bufferFilter = ` 
-      ST_Buffer(
-        ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
-        ${props.bufferRadius}
-      ) && ap.coordinate 
-    `
+    let bufferFilter = ''
+    if (props.longitude !== undefined && props.latitude !== undefined && props.bufferRadius !== undefined) {
+      bufferFilter = ` 
+        ST_Buffer(
+          ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
+          ${props.bufferRadius}
+        ) && ap.coordinate 
+      `
+    }
+
+    if (props.geojson !== undefined) {
+      bufferFilter = ` 
+        ST_GeomFromGeoJSON('${props.geojson}')::geography && ap.coordinate 
+      `
+    }
+
     let buildingTypeFilter = ` 
       AND ap."buildingType" = ${props.buildingType} 
     `
@@ -195,6 +205,7 @@ export default class AnalysisController extends BaseController {
       `
     }
 
+    // console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {
@@ -352,12 +363,29 @@ export default class AnalysisController extends BaseController {
       count: number
     }
     let queryString = this.queryStringStorer.analysis.marketCompareStatistic
-    let bufferFilter = ` 
-      ST_Buffer(
-        ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
-        ${props.bufferRadius}
-      ) && ap.coordinate 
-    `
+    // let bufferFilter = ` 
+    //   ST_Buffer(
+    //     ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
+    //     ${props.bufferRadius}
+    //   ) && ap.coordinate 
+    // `
+    let bufferFilter = ''
+    if (props.longitude !== undefined && props.latitude !== undefined && props.bufferRadius !== undefined) {
+      bufferFilter = ` 
+        ST_Buffer(
+          ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
+          ${props.bufferRadius}
+        ) && ap.coordinate 
+      `
+    }
+
+    if (props.geojson !== undefined) {
+      bufferFilter = ` 
+        ST_GeomFromGeoJSON('${props.geojson}')::geography && ap.coordinate 
+      `
+    }
+
+
     let buildingTypeFilter = ` 
       AND ap."buildingType" = ${props.buildingType} 
     `
@@ -389,6 +417,7 @@ export default class AnalysisController extends BaseController {
         AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
       `
     }
+    console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {
