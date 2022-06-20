@@ -417,7 +417,7 @@ export default class AnalysisController extends BaseController {
         AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
       `
     }
-    console.log(queryString)
+    // console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {

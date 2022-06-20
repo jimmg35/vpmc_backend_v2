@@ -6,7 +6,7 @@ import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
 import { IGetAprInfo, IGetSimpleInfo, IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
 
-const { OK } = StatusCodes
+const { OK, NOT_FOUND } = StatusCodes
 
 @autoInjectable()
 export default class CommiteeController extends BaseController {
@@ -18,7 +18,8 @@ export default class CommiteeController extends BaseController {
     "listCommiteeByExtent": "GET",
     "getSimpleInfo": "GET",
     "post": "POST",
-    "getAprInfo": "GET"
+    "getAprInfo": "GET",
+    "getCommiteeInfoById": "GET"
   }
 
   constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
@@ -213,6 +214,43 @@ export default class CommiteeController extends BaseController {
       )
     )
     return res.status(OK).json(result)
+  }
+
+  /**
+   * @swagger
+   * /Commitee/getCommiteeInfoById:
+   *   get:
+   *     tags: 
+   *       - Commitee
+   *     summary: 用管委會id查詢基本資料.
+   *     description: 現在只有新北市10年份的資料
+   *     parameters:
+   *       - in: query
+   *         name: commiteeId
+   *         required: true
+   *         default: 52daa333-6e71-4dfd-a70d-97e7dd0cde2d
+   *         schema:
+   *           type: string
+   *         description: 管委會id
+   *     responses:
+   *       '200':    # status code
+   *         description: 該社區的基本資料.
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   */
+  public getCommiteeInfoById = async (req: Request, res: Response) => {
+    const props = { ...req.query } as unknown as { commiteeId: string }
+    const result = await this.dbcontext.connection.query(
+      `SELECT * FROM commitee WHERE id = '${props.commiteeId}'`
+    )
+    if (result.length !== 0) {
+      return res.status(OK).json(result[0])
+    } else {
+      return res.status(NOT_FOUND)
+    }
+
   }
 
   public post = async (req: Request, res: Response) => {
