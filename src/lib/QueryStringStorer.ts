@@ -18,6 +18,7 @@ interface IUtilityMap extends IStringMap {
   listCountiesByRegion: string
   listTownsByCounty: string
   getVillageGeographyByTown: string
+  getCountyTownNameByCoordinate: string
 }
 
 interface IAnalysisMap extends IStringMap {
@@ -132,6 +133,16 @@ export default class QueryStringStorer {
               geom
             FROM "taiwan_map" WHERE countyname = '{0}' AND townname = '{1}'
           ) AS t
+        `,
+      getCountyTownNameByCoordinate: `
+          SELECT 
+            ta.countyname, 
+            ta.townname 
+          FROM 
+            taiwan_map ta 
+          WHERE 
+            ST_SetSRID(
+              ST_Point({0}, {1})::geography, 4326) && ta.geom
         `
     }
     this.analysis = {
