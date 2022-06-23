@@ -7,7 +7,7 @@ import QueryStringStorer from "../../lib/QueryStringStorer"
 import { IGetTownInfo } from "./IApr"
 import { getAge } from "../util"
 
-const { OK } = StatusCodes
+const { OK, NOT_FOUND } = StatusCodes
 
 @autoInjectable()
 export default class AprController extends BaseController {
@@ -16,7 +16,8 @@ export default class AprController extends BaseController {
   public dbcontext: PostgreSQLContext
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "getTownInfo": "GET",
-    "post": "POST"
+    "post": "POST",
+    "getCommiteeByAprId": "GET"
   }
 
   constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
@@ -24,6 +25,52 @@ export default class AprController extends BaseController {
     this.queryStringStorer = queryStringStorer
     this.dbcontext = dbcontext
     this.dbcontext.connect()
+  }
+
+  /**
+   * @swagger
+   * /Apr/getCommiteeByAprId:
+   *   get:
+   *     tags: 
+   *       - Apr
+   *     summary: 根據實價交易ID查詢35公尺內管委會
+   *     parameters:
+   *
+   *       - in: query
+   *         name: aprId
+   *         required: true
+   *         default: RPWOMLPJOHKFFBF68CA
+   *         schema:
+   *           type: string
+   *         description: 實價交易ID
+   *
+   *     responses:
+   *       '200':    # status code
+   *         description: 該實價交易紀錄35公尺內的管委會名稱
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   *       '404':    # status code
+   *         description: 該實價交易紀錄附近沒有管委會
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   */
+  public getCommiteeByAprId = async (req: Request, res: Response) => {
+    const params_set = { ...req.query } as { id: string }
+    const result = await this.dbcontext.connection.query(
+      this.queryStringStorer.apr.getCommiteeByAprId.format(
+        [params_set.id]
+      )
+    )
+
+    if (result.length === 0) {
+      return res.status(NOT_FOUND).json({})
+    } else {
+      return res.status(OK).json(result[0])
+    }
   }
 
 

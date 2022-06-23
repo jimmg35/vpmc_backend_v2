@@ -12,6 +12,7 @@ interface ICommiteeStringMap extends IStringMap {
 
 interface IAprStringMap extends IStringMap {
   getTownInfo: string
+  getCommiteeByAprId: string
 }
 
 interface IUtilityMap extends IStringMap {
@@ -111,6 +112,21 @@ export default class QueryStringStorer {
           ta.countyname = '{0}'
           AND ta.townname = '{1}' 
           AND ap.coordinate && ta.geom ORDER BY ap."transactionTime";
+      `,
+      getCommiteeByAprId: `
+        SELECT
+          co.organization,
+          co."licenseYear",
+          co."licenseCode"
+        FROM
+          apr ap,
+          commitee co
+        WHERE 
+          ap."id" = '{0}'
+        AND
+          ST_Buffer(
+            ap.coordinate, 35
+          ) && co.coordinate
       `
     }
     this.utility = {
@@ -148,6 +164,7 @@ export default class QueryStringStorer {
     this.analysis = {
       marketCompare: `
         SELECT
+          ap.id,
           ap."transactionTime" as transactionTime,
           ap."completionTime" as completionTime,
           ap."transferFloor",
