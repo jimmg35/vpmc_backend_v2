@@ -17,7 +17,8 @@ export default class AprController extends BaseController {
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "getTownInfo": "GET",
     "post": "POST",
-    "getCommiteeByAprId": "GET"
+    "getCommiteeByAprId": "GET",
+    "getCommiteeByAprIds": "GET"
   }
 
   constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
@@ -37,7 +38,7 @@ export default class AprController extends BaseController {
    *     parameters:
    *
    *       - in: query
-   *         name: aprId
+   *         name: id
    *         required: true
    *         default: RPWOMLPJOHKFFBF68CA
    *         schema:
@@ -71,6 +72,26 @@ export default class AprController extends BaseController {
     } else {
       return res.status(OK).json(result[0])
     }
+  }
+
+  public getCommiteeByAprIds = async (req: Request, res: Response) => {
+    const params_set = { ...req.query } as { ids: string }
+    const ids = params_set.ids.split(',')
+
+    const output = []
+    for (let i = 0; i < ids.length; i++) {
+      const result = await this.dbcontext.connection.query(
+        this.queryStringStorer.apr.getCommiteeByAprId.format(
+          [ids[i]]
+        )
+      )
+      if (result[0]) {
+        output.push(result[0])
+      } else {
+        output.push({ organization: '無管委會' })
+      }
+    }
+    return res.status(OK).json(output)
   }
 
 
