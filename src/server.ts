@@ -7,17 +7,7 @@ import express, { Router } from 'express'
 import { IController } from './controllers/BaseController'
 import { autoInjectSubRoutes } from './controllers/BaseController'
 import swaggerUi from 'swagger-ui-express'
-import YAML from 'yamljs'
-import swaggerDefinitionFile from '../envConfig/swaggerDefinition.json'
-import swaggerJSDoc from 'swagger-jsdoc'
-
-const options = {
-  swaggerDefinition: swaggerDefinitionFile,
-  apis: ['src/controllers/**/*.ts']
-}
-const swaggerSpec = swaggerJSDoc(options)
-
-// const swaggerDocument = YAML.load(path.resolve(__dirname, '../envConfig/swagger.yml'))
+import swaggerSpec from './swagger'
 
 interface IServerParam {
   controllers: Array<IController>
@@ -32,8 +22,6 @@ export class Server {
    * @param controllers 要註冊的controller陣列
    */
   constructor(options: IServerParam) {
-
-
     this.app = express()
     this.addMiddlewares()
 
@@ -52,13 +40,16 @@ export class Server {
       extended: true,
       limit: '50mb'
     }))
-    // this.app.use(express.urlencoded({ extended: true }))
     this.app.use(express.json({
       limit: '50mb'
     }))
     this.app.use(cors())
-    // this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+    // 註冊swagger
     this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+    // 註冊靜態檔案路由
+    this.app.use('/static/bulletin', express.static(__dirname + '/static/bulletin'))
+    this.app.use('/static/generalLaw', express.static(__dirname + '/static/generalLaw'))
+    this.app.use('/static/reportSample', express.static(__dirname + '/static/reportSample'))
   }
 
   /**
