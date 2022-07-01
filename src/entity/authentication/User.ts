@@ -68,5 +68,6 @@ export class User {
   @OneToMany(() => BuildingSheet, buildingsheet => buildingsheet.user)
   buildingSheets: BuildingSheet[]
 
-
+  @Column({ nullable: true })
+  lastLoginTime?: Date
 }
