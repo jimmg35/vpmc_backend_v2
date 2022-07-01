@@ -13,7 +13,7 @@ import sha256 from "fast-sha256"
 import util from "tweetnacl-util"
 
 (async () => {
-  // console.log(util.encodeBase64(sha256('Jim60308#' as any)))
+  // console.log(util.encodeBase64(sha256('Vpmc1108#' as any)))
 
   // 註冊controllers
   const homeController = container.resolve(HomeController)
@@ -40,6 +40,8 @@ import util from "tweetnacl-util"
 
   // 啟動後端伺服器
   server.start()
+
+  // console.log()
 
   // open(`http://localhost:${process.env.PORT}/api/docs`)
 })()

@@ -88,6 +88,9 @@ export default class AuthController extends BaseController {
     }
 
     if (user?.password == util.encodeBase64(sha256(params_set.password)) && user.isActive == true && userRoles) {
+      user.lastLoginTime = new Date()
+      console.log(`user ${user.username} login at ${user.lastLoginTime}`)
+      await user_repository.save(user)
       const token = this.jwtAuthenticator.signToken({
         _userId: user.userId,
         username: user.username,
