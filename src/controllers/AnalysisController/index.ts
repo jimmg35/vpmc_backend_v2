@@ -217,6 +217,12 @@ export default class AnalysisController extends BaseController {
       `
     }
 
+    if (props.urbanLandUse) {
+      queryString += `
+        AND ap."urbanLandUse" = ${props.urbanLandUse} 
+      `
+    }
+
     // console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined

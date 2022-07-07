@@ -22,4 +22,6 @@ export interface IMarketCompare {
   ageEnd?: number
 
   parkingSpaceType?: number
+
+  urbanLandUse?: number
 }
