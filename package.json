@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/service.ts",
+    "build": "tsc",
     "migrate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -n migration",
     "update": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run"
   },
@@ -47,6 +48,7 @@
     "smtp-server": "^3.9.0",
     "swagger-jsdoc": "^6.2.1",
     "swagger-ui-express": "^4.4.0",
+    "ts-node": "^10.8.1",
     "tsyringe": "^4.6.0",
     "tweetnacl-util": "^0.15.1",
     "typeorm": "^0.2.41",

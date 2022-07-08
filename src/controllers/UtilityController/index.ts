@@ -17,7 +17,8 @@ export default class UtilityController extends BaseController {
     "listCountiesByRegion": "GET",
     "listTownsByCounty": "GET",
     "getVillageGeographyByTown": "GET",
-    "getCountyTownNameByCoordinate": "GET"
+    "getCountyTownNameByCoordinate": "GET",
+    "getCoordinateByCountyTownName": "GET"
   }
 
   constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
@@ -234,7 +235,50 @@ export default class UtilityController extends BaseController {
     } else {
       return res.status(NOT_FOUND).json({})
     }
+  }
 
+  /**
+   * @swagger
+   * /Utility/getCoordinateByCountyTownName:
+   *   get:
+   *     tags: 
+   *       - Utility
+   *     summary: 給予行政區與鄉鎮市區名稱，取得經緯度
+   *     parameters:
+   *       - in: query
+   *         name: county
+   *         required: true
+   *         default: 新北市
+   *         schema:
+   *           type: string
+   *         description: 行政區
+   *       - in: query
+   *         name: town
+   *         required: true
+   *         default: 林口區
+   *         schema:
+   *           type: string
+   *         description: 鄉鎮市區
+   *     responses:
+   *       '200':    # status code
+   *         description: 經緯度
+   *         content:
+   *           application/json:
+   *             schema: 
+   *               type: object
+   */
+  public getCoordinateByCountyTownName = async (req: Request, res: Response) => {
+    const props = { ...req.query } as unknown as { county: string, town: string }
+    const result = await this.dbcontext.connection.query(
+      this.queryStringStorer.utility.getCoordinateByCountyTownName.format(
+        [props.county, props.town]
+      )
+    )
+    if (result.length !== 0) {
+      return res.status(OK).json(result[0])
+    } else {
+      return res.status(NOT_FOUND).json({})
+    }
   }
 
 }

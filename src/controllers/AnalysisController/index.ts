@@ -173,10 +173,22 @@ export default class AnalysisController extends BaseController {
       `
     }
 
-    let buildingTypeFilter = ` 
-      AND ap."buildingType" = ${props.buildingType} 
-    `
-    queryString += bufferFilter + buildingTypeFilter
+    let assetTypeFilter = ''
+    if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
+      assetTypeFilter = `
+        AND ap."buildingType" = ${props.buildingType} 
+        AND ap."buildingAmount" > 0 
+      `
+    } else if (Number(props.buildingType) === 100) {
+      assetTypeFilter = `
+        AND ap."landAmount" > 0 
+      `
+    } else if (Number(props.buildingType) === 200) {
+      assetTypeFilter = `
+        AND ap."parkAmount" > 0 
+      `
+    }
+    queryString += bufferFilter + assetTypeFilter
 
     if (props.transactionTimeStart && props.transactionTimeEnd) {
       let transactionTimeFilter = ` 
@@ -202,6 +214,12 @@ export default class AnalysisController extends BaseController {
     if (props.parkingSpaceType) {
       queryString += `
         AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
+      `
+    }
+
+    if (props.urbanLandUse) {
+      queryString += `
+        AND ap."urbanLandUse" = ${props.urbanLandUse} 
       `
     }
 
@@ -386,10 +404,27 @@ export default class AnalysisController extends BaseController {
     }
 
 
-    let buildingTypeFilter = ` 
-      AND ap."buildingType" = ${props.buildingType} 
-    `
-    queryString += bufferFilter + buildingTypeFilter
+    let assetTypeFilter = ''
+    if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
+      assetTypeFilter = `
+        AND ap."buildingType" = ${props.buildingType} 
+        AND ap."buildingAmount" > 0 
+      `
+    } else if (Number(props.buildingType) === 100) {
+      assetTypeFilter = `
+        AND ap."landAmount" > 0 
+      `
+    } else if (Number(props.buildingType) === 200) {
+      assetTypeFilter = `
+        AND ap."parkAmount" > 0 
+      `
+    }
+    queryString += bufferFilter + assetTypeFilter
+
+    // let buildingTypeFilter = ` 
+    //   AND ap."buildingType" = ${props.buildingType} 
+    // `
+    // queryString += bufferFilter + buildingTypeFilter
 
     if (props.transactionTimeStart && props.transactionTimeEnd) {
       let transactionTimeFilter = ` 
