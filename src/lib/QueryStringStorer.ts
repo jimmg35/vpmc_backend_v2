@@ -195,6 +195,10 @@ export default class QueryStringStorer {
           ap."buildingType",
           ap."floor",
           ap."urbanLandUse",
+          ap."buildingArea",
+          ap."subBuildingArea",
+          ap."belconyArea",
+          ap."landTransferArea",
           ST_X(ap.coordinate::geometry) as longitude,
           ST_Y(ap.coordinate::geometry) as latitude 
         FROM 
