@@ -140,6 +140,14 @@ export default class AnalysisController extends BaseController {
    *           type: number
    *         description: 車位類別 0無, 1塔式車位, 2坡道平面, 3升降平面, 4升降機械, 5坡道機械, 6一樓平面, 7其他
    * 
+   *       - in: query
+   *         name: urbanLandUse
+   *         required: false
+   *         default: 0
+   *         schema:
+   *           type: number
+   *         description: 土地分區 0住宅區, 1商業區, 2其他, 4工業區, 5農業區
+   * 
    *     responses:
    *       '200':    # status code
    *         description: 
@@ -219,7 +227,7 @@ export default class AnalysisController extends BaseController {
 
     if (props.urbanLandUse) {
       queryString += `
-        AND ap."urbanLandUse" = ${props.urbanLandUse} 
+        AND ap."urbanLandUse" in (${props.urbanLandUse}) 
       `
     }
 
@@ -452,6 +460,13 @@ export default class AnalysisController extends BaseController {
         AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
       `
     }
+
+    if (props.urbanLandUse) {
+      queryString += `
+        AND ap."urbanLandUse" in (${props.urbanLandUse}) 
+      `
+    }
+
     // console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
