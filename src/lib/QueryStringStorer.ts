@@ -199,6 +199,7 @@ export default class QueryStringStorer {
           ap."subBuildingArea",
           ap."belconyArea",
           ap."landTransferArea",
+          ap."parkingSpaceType",
           ST_X(ap.coordinate::geometry) as longitude,
           ST_Y(ap.coordinate::geometry) as latitude 
         FROM 
