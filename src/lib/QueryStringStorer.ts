@@ -203,7 +203,8 @@ export default class QueryStringStorer {
           ST_X(ap.coordinate::geometry) as longitude,
           ST_Y(ap.coordinate::geometry) as latitude 
         FROM 
-          apr ap
+          apr ap,
+          taiwan_map ta
         WHERE
       `,
       marketCompareStatistic: `
@@ -214,7 +215,8 @@ export default class QueryStringStorer {
           ap."transactionTime" as transactionTime,
           ap."completionTime" as completionTime
         FROM 
-          apr ap
+          apr ap,
+          taiwan_map ta
         WHERE
       `
     }

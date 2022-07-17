@@ -181,6 +181,12 @@ export default class AnalysisController extends BaseController {
       `
     }
 
+    if (props.county !== undefined && props.town !== undefined) {
+      bufferFilter = ` 
+        ta.geom && ap.coordinate AND ta.countyname='${props.county}' AND ta.townname='${props.town}'  
+      `
+    }
+
     let assetTypeFilter = ''
     if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
       assetTypeFilter = `
@@ -408,6 +414,11 @@ export default class AnalysisController extends BaseController {
     if (props.geojson !== undefined) {
       bufferFilter = ` 
         ST_GeomFromGeoJSON('${props.geojson}')::geography && ap.coordinate 
+      `
+    }
+    if (props.county !== undefined && props.town !== undefined) {
+      bufferFilter = ` 
+        ta.geom && ap.coordinate AND ta.countyname='${props.county}' AND ta.townname='${props.town}'  
       `
     }
 

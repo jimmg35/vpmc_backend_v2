@@ -24,4 +24,7 @@ export interface IMarketCompare {
   parkingSpaceType?: number
 
   urbanLandUse?: number
+
+  county?: string
+  town?: string
 }
