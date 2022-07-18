@@ -164,7 +164,9 @@ export default class AnalysisController extends BaseController {
       longitude: number
       latitude: number
     }
-    let queryString = this.queryStringStorer.analysis.marketCompare
+    // ,taiwan_map ta
+
+    let queryString = ''
     let bufferFilter = ''
     if (props.longitude !== undefined && props.latitude !== undefined && props.bufferRadius !== undefined) {
       bufferFilter = ` 
@@ -182,9 +184,12 @@ export default class AnalysisController extends BaseController {
     }
 
     if (props.county !== undefined && props.town !== undefined) {
+      queryString = this.queryStringStorer.analysis.marketCompareCountyTown
       bufferFilter = ` 
         ta.geom && ap.coordinate AND ta.countyname='${props.county}' AND ta.townname='${props.town}'  
       `
+    } else {
+      queryString = this.queryStringStorer.analysis.marketCompare
     }
 
     let assetTypeFilter = ''
@@ -394,7 +399,7 @@ export default class AnalysisController extends BaseController {
       age_MEAN: number
       count: number
     }
-    let queryString = this.queryStringStorer.analysis.marketCompareStatistic
+    let queryString = ''
     // let bufferFilter = ` 
     //   ST_Buffer(
     //     ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
@@ -417,9 +422,12 @@ export default class AnalysisController extends BaseController {
       `
     }
     if (props.county !== undefined && props.town !== undefined) {
+      queryString = this.queryStringStorer.analysis.marketCompareStatisticCountyTown
       bufferFilter = ` 
         ta.geom && ap.coordinate AND ta.countyname='${props.county}' AND ta.townname='${props.town}'  
       `
+    } else {
+      queryString = this.queryStringStorer.analysis.marketCompareStatistic
     }
 
 

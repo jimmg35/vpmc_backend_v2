@@ -203,11 +203,54 @@ export default class QueryStringStorer {
           ST_X(ap.coordinate::geometry) as longitude,
           ST_Y(ap.coordinate::geometry) as latitude 
         FROM 
+          apr ap
+        WHERE
+      `,
+      marketCompareCountyTown: `
+        SELECT
+          ap.id,
+          ap."transactionTime" as transactionTime,
+          ap."completionTime" as completionTime,
+          ap."transferFloor",
+          ap."unitPrice",
+          ap."priceWithoutParking",
+          ap."roomNumber",
+          ap."hallNumber",
+          ap."bathNumber",
+          ap."buildingTransferArea",
+          ap."parkingSpacePrice",
+          ap."parkingSpaceTransferArea",
+          ap."price",
+          ap."landAmount",
+          ap."buildingAmount",
+          ap."parkAmount",
+          ap."buildingType",
+          ap."floor",
+          ap."urbanLandUse",
+          ap."buildingArea",
+          ap."subBuildingArea",
+          ap."belconyArea",
+          ap."landTransferArea",
+          ap."parkingSpaceType",
+          ST_X(ap.coordinate::geometry) as longitude,
+          ST_Y(ap.coordinate::geometry) as latitude 
+        FROM 
           apr ap,
           taiwan_map ta
         WHERE
       `,
       marketCompareStatistic: `
+        SELECT
+          ap."buildingType",
+          ap."priceWithoutParking",
+          ap."unitPrice",
+          ap."transactionTime" as transactionTime,
+          ap."completionTime" as completionTime
+        FROM 
+          apr ap
+        WHERE
+      `,
+      marketCompareStatisticCountyTown: `
         SELECT
           ap."buildingType",
           ap."priceWithoutParking",
