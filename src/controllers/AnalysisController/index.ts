@@ -9,6 +9,109 @@ import { IMarketCompare } from "./IAnalysis"
 
 const { OK } = StatusCodes
 
+const square = 3.305785
+
+const buileMarketCompareQuery = (props: IMarketCompare, queryStringStorer: QueryStringStorer): string => {
+  let queryString = ''
+  let bufferFilter = ''
+
+  /* 第一種空間查詢方式 */
+  if (props.longitude !== undefined && props.latitude !== undefined && props.bufferRadius !== undefined) {
+    bufferFilter = ` 
+      ST_Buffer(
+        ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
+        ${props.bufferRadius}
+      ) && ap.coordinate 
+    `
+  }
+
+  /* 第二種空間查詢方式 */
+  if (props.geojson !== undefined) {
+    bufferFilter = ` 
+      ST_GeomFromGeoJSON('${props.geojson}')::geography && ap.coordinate 
+    `
+  }
+
+  /* 第三種空間查詢方式 */
+  if (props.county !== undefined && props.town !== undefined) {
+    let townsString = ''
+    const towns: string[] = props.town.split(',')
+    towns.forEach((town) => {
+      townsString += `'${town}',`
+    })
+    townsString = townsString.substring(0, townsString.length - 1)
+    queryString = queryStringStorer.analysis.marketCompareCountyTown
+    bufferFilter = ` 
+      ta.geom && ap.coordinate AND ta.countyname='${props.county}' AND ta.townname in (${townsString})  
+    `
+  } else {
+    queryString = queryStringStorer.analysis.marketCompare
+  }
+
+  let assetTypeFilter = ''
+  if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
+    assetTypeFilter = `
+      AND ap."buildingType" = ${props.buildingType} 
+      AND ap."buildingAmount" > 0 
+    `
+  } else if (Number(props.buildingType) === 100) {
+    assetTypeFilter = `
+      AND ap."landAmount" > 0 
+    `
+  } else if (Number(props.buildingType) === 200) {
+    assetTypeFilter = `
+      AND ap."parkAmount" > 0 
+    `
+  }
+  queryString += bufferFilter + assetTypeFilter
+
+  if (props.transactionTimeStart && props.transactionTimeEnd) {
+    let transactionTimeFilter = ` 
+      AND ap."transactionTime" >= '${props.transactionTimeStart}' AND ap."transactionTime" <= '${props.transactionTimeEnd}' 
+    `
+    queryString += transactionTimeFilter
+  }
+
+  if (props.buildingAreaStart && props.buildingAreaEnd) {
+    let buildingAreaFilter = ` 
+      AND ap."buildingTransferArea" >= ${props.buildingAreaStart} AND ap."buildingTransferArea" <= ${props.buildingAreaEnd} 
+    `
+    queryString += buildingAreaFilter
+  }
+
+  if (props.landAreaStart && props.landAreaEnd) {
+    let landAreaFilter = ` 
+      AND ap."landTransferArea" >= ${props.landAreaStart} AND ap."landTransferArea" <= ${props.landAreaEnd} 
+    `
+    queryString += landAreaFilter
+  }
+
+  if (props.parkingSpaceType) {
+    queryString += `
+      AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
+    `
+  }
+
+  if (props.urbanLandUse) {
+    queryString += `
+      AND ap."urbanLandUse" in (${props.urbanLandUse}) 
+    `
+  }
+
+  if (props.minPrice && props.maxPrice) {
+    queryString += `
+      AND ap."price" >= ${props.minPrice * 10000} AND ap."price" <= ${props.maxPrice * 10000}
+    `
+  }
+
+  if (props.minUnitPrice && props.maxUnitPrice) {
+    queryString += `
+      AND ap."unitPrice" >= ${props.minUnitPrice * 10000 / square} AND ap."unitPrice" <= ${props.maxUnitPrice * 10000 / square}
+    `
+  }
+  return queryString
+}
+
 @autoInjectable()
 export default class AnalysisController extends BaseController {
 
@@ -140,6 +243,14 @@ export default class AnalysisController extends BaseController {
    *           type: number
    *         description: 車位類別 0無, 1塔式車位, 2坡道平面, 3升降平面, 4升降機械, 5坡道機械, 6一樓平面, 7其他
    * 
+   *       - in: query
+   *         name: urbanLandUse
+   *         required: false
+   *         default: 0
+   *         schema:
+   *           type: number
+   *         description: 土地分區 0住宅區, 1商業區, 2其他, 4工業區, 5農業區
+   * 
    *     responses:
    *       '200':    # status code
    *         description: 
@@ -149,81 +260,15 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompare = async (req: Request, res: Response) => {
-    const props = { ...req.query } as unknown as IMarketCompare
     interface IResult {
       transactiontime: string
       completiontime: string
       longitude: number
       latitude: number
     }
-    let queryString = this.queryStringStorer.analysis.marketCompare
-    let bufferFilter = ''
-    if (props.longitude !== undefined && props.latitude !== undefined && props.bufferRadius !== undefined) {
-      bufferFilter = ` 
-        ST_Buffer(
-          ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
-          ${props.bufferRadius}
-        ) && ap.coordinate 
-      `
-    }
-
-    if (props.geojson !== undefined) {
-      bufferFilter = ` 
-        ST_GeomFromGeoJSON('${props.geojson}')::geography && ap.coordinate 
-      `
-    }
-
-    let assetTypeFilter = ''
-    if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
-      assetTypeFilter = `
-        AND ap."buildingType" = ${props.buildingType} 
-        AND ap."buildingAmount" > 0 
-      `
-    } else if (Number(props.buildingType) === 100) {
-      assetTypeFilter = `
-        AND ap."landAmount" > 0 
-      `
-    } else if (Number(props.buildingType) === 200) {
-      assetTypeFilter = `
-        AND ap."parkAmount" > 0 
-      `
-    }
-    queryString += bufferFilter + assetTypeFilter
-
-    if (props.transactionTimeStart && props.transactionTimeEnd) {
-      let transactionTimeFilter = ` 
-        AND ap."transactionTime" >= '${props.transactionTimeStart}' AND ap."transactionTime" <= '${props.transactionTimeEnd}' 
-      `
-      queryString += transactionTimeFilter
-    }
-
-    if (props.buildingAreaStart && props.buildingAreaEnd) {
-      let buildingAreaFilter = ` 
-        AND ap."buildingTransferArea" >= ${props.buildingAreaStart} AND ap."buildingTransferArea" <= ${props.buildingAreaEnd} 
-      `
-      queryString += buildingAreaFilter
-    }
-
-    if (props.landAreaStart && props.landAreaEnd) {
-      let landAreaFilter = ` 
-        AND ap."landTransferArea" >= ${props.landAreaStart} AND ap."landTransferArea" <= ${props.landAreaEnd} 
-      `
-      queryString += landAreaFilter
-    }
-
-    if (props.parkingSpaceType) {
-      queryString += `
-        AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
-      `
-    }
-
-    if (props.urbanLandUse) {
-      queryString += `
-        AND ap."urbanLandUse" = ${props.urbanLandUse} 
-      `
-    }
-
-    // console.log(queryString)
+    const props = { ...req.query } as unknown as IMarketCompare
+    const queryString = buileMarketCompareQuery(props, this.queryStringStorer)
+    console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {
@@ -365,7 +410,6 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompareStatistic = async (req: Request, res: Response) => {
-    const props = { ...req.query } as unknown as IMarketCompare
     interface IResult {
       buildingType: number
       priceWithoutParking: number
@@ -374,85 +418,15 @@ export default class AnalysisController extends BaseController {
       transactiontime: string
       age: number
     }
+
     interface IResultStatistics {
       priceWithoutParking_MEAN: number
       unitPrice_MEAN: number
       age_MEAN: number
       count: number
     }
-    let queryString = this.queryStringStorer.analysis.marketCompareStatistic
-    // let bufferFilter = ` 
-    //   ST_Buffer(
-    //     ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
-    //     ${props.bufferRadius}
-    //   ) && ap.coordinate 
-    // `
-    let bufferFilter = ''
-    if (props.longitude !== undefined && props.latitude !== undefined && props.bufferRadius !== undefined) {
-      bufferFilter = ` 
-        ST_Buffer(
-          ST_SetSRID(ST_Point(${props.longitude}, ${props.latitude})::geography, 4326), 
-          ${props.bufferRadius}
-        ) && ap.coordinate 
-      `
-    }
-
-    if (props.geojson !== undefined) {
-      bufferFilter = ` 
-        ST_GeomFromGeoJSON('${props.geojson}')::geography && ap.coordinate 
-      `
-    }
-
-
-    let assetTypeFilter = ''
-    if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
-      assetTypeFilter = `
-        AND ap."buildingType" = ${props.buildingType} 
-        AND ap."buildingAmount" > 0 
-      `
-    } else if (Number(props.buildingType) === 100) {
-      assetTypeFilter = `
-        AND ap."landAmount" > 0 
-      `
-    } else if (Number(props.buildingType) === 200) {
-      assetTypeFilter = `
-        AND ap."parkAmount" > 0 
-      `
-    }
-    queryString += bufferFilter + assetTypeFilter
-
-    // let buildingTypeFilter = ` 
-    //   AND ap."buildingType" = ${props.buildingType} 
-    // `
-    // queryString += bufferFilter + buildingTypeFilter
-
-    if (props.transactionTimeStart && props.transactionTimeEnd) {
-      let transactionTimeFilter = ` 
-        AND ap."transactionTime" >= '${props.transactionTimeStart}' AND ap."transactionTime" <= '${props.transactionTimeEnd}' 
-      `
-      queryString += transactionTimeFilter
-    }
-
-    if (props.buildingAreaStart && props.buildingAreaEnd) {
-      let buildingAreaFilter = ` 
-        AND ap."buildingTransferArea" >= ${props.buildingAreaStart} AND ap."buildingTransferArea" <= ${props.buildingAreaEnd} 
-      `
-      queryString += buildingAreaFilter
-    }
-
-    if (props.landAreaStart && props.landAreaEnd) {
-      let landAreaFilter = ` 
-        AND ap."landTransferArea" >= ${props.landAreaStart} AND ap."landTransferArea" <= ${props.landAreaEnd} 
-      `
-      queryString += landAreaFilter
-    }
-
-    if (props.parkingSpaceType) {
-      queryString += `
-        AND ap."parkingSpaceType" = ${props.parkingSpaceType} 
-      `
-    }
-    // console.log(queryString)
+    const props = { ...req.query } as unknown as IMarketCompare
+    const queryString = buileMarketCompareQuery(props, this.queryStringStorer)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {

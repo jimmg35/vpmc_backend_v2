@@ -1,4 +1,6 @@
 #!/bin/sh
+# Usage : sh build.sh [imageName] [privateResgistryDomain]:[port]
+
 mkdir -p dist
 rm dist/$1.tar
 docker image rm $1
