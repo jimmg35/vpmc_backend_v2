@@ -9,6 +9,8 @@ import { IMarketCompare } from "./IAnalysis"
 
 const { OK } = StatusCodes
 
+const square = 3.305785
+
 const buileMarketCompareQuery = (props: IMarketCompare, queryStringStorer: QueryStringStorer): string => {
   let queryString = ''
   let bufferFilter = ''
@@ -93,6 +95,18 @@ const buileMarketCompareQuery = (props: IMarketCompare, queryStringStorer: Query
   if (props.urbanLandUse) {
     queryString += `
       AND ap."urbanLandUse" in (${props.urbanLandUse}) 
+    `
+  }
+
+  if (props.minPrice && props.maxPrice) {
+    queryString += `
+      AND ap."price" >= ${props.minPrice * 10000} AND ap."price" <= ${props.maxPrice * 10000}
+    `
+  }
+
+  if (props.minUnitPrice && props.maxUnitPrice) {
+    queryString += `
+      AND ap."unitPrice" >= ${props.minUnitPrice * 10000 / square} AND ap."unitPrice" <= ${props.maxUnitPrice * 10000 / square}
     `
   }
   return queryString
