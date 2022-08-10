@@ -24,7 +24,7 @@ export default class FileController extends BaseController {
   }
 
   public getBulletinFileInfo = async (req: Request, res: Response) => {
-    const serverRoute = process.env.Mail_Redirect_Domain + 'static/bulletin/'
+    const serverRoute = process.env.Static_File_Prod + 'static/bulletin/'
     const files: IStaticFile[] = [
       { serverPath: serverRoute + 'a.pdf', alias: '2016.11.02第一號公報-不動產估價師職業道德規範' },
       { serverPath: serverRoute + 'b.pdf', alias: '2016.11.02第二號公報-敘述式不動產估價報告書範本' },
@@ -40,7 +40,7 @@ export default class FileController extends BaseController {
   }
 
   public getGeneralLawFileInfo = async (req: Request, res: Response) => {
-    const serverRoute = process.env.Mail_Redirect_Domain + 'static/generalLaw/'
+    const serverRoute = process.env.Static_File_Prod + 'static/generalLaw/'
     const files: IStaticFile[] = [
       { serverPath: serverRoute + 'a.pdf', alias: '2017.12.08第一號估價作業通則：公共設施用地及公共設施保留地(暨既成巷道)' },
       { serverPath: serverRoute + 'b.pdf', alias: '2017.12.20第二號估價作業通則：臺北市都市危險及老舊建物重建' },
@@ -57,7 +57,7 @@ export default class FileController extends BaseController {
   }
 
   public getReportSampleFileInfo = async (req: Request, res: Response) => {
-    const serverRoute = process.env.Mail_Redirect_Domain + 'static/reportSample/'
+    const serverRoute = process.env.Static_File_Prod + 'static/reportSample/'
     const files: IStaticFile[] = [
       { serverPath: serverRoute + 'a.doc', alias: '台北市107.0104' },
       { serverPath: serverRoute + 'b.docx', alias: '新北市110.0416' },

@@ -1,14 +1,14 @@
-import { BaseController, HTTPMETHOD } from "./BaseController"
+import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../dbcontext"
+import { PostgreSQLContext } from "../../dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import { Protected, extractPostParams, extractGetParams } from "./util"
-import JwtAuthenticator from "../lib/JwtAuthenticator"
-import { User } from "../entity/authentication/User"
-import { LandSheet } from "../entity/SurveyDataSheet/LandSheet"
-import { ParkSheet } from "../entity/SurveyDataSheet/ParkSheet"
-import { BuildingSheet } from "../entity/SurveyDataSheet/BuildingSheet"
+import { Protected, extractPostParams, extractGetParams } from "../../lib/util"
+import JwtAuthenticator from "../../lib/JwtAuthenticator"
+import { User } from "../../entity/authentication/User"
+import { LandSheet } from "../../entity/SurveyDataSheet/LandSheet"
+import { ParkSheet } from "../../entity/SurveyDataSheet/ParkSheet"
+import { BuildingSheet } from "../../entity/SurveyDataSheet/BuildingSheet"
 const { OK, UNAUTHORIZED, NOT_FOUND, BAD_REQUEST } = StatusCodes
 
 @autoInjectable()
