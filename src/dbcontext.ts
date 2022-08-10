@@ -43,45 +43,6 @@ export class DbContext implements IDbContext {
   }
 }
 
-export class SQLServerContext extends DbContext {
-
-  constructor() {
-    super()
-  }
-
-  public connect = async () => {
-    try {
-      this.connection = await createConnection({
-        "type": this.dbConfig.type as any,
-        "host": this.dbConfig.host,
-        "port": this.dbConfig.port,
-        "username": this.dbConfig.username,
-        "password": this.dbConfig.password,
-        "database": this.dbConfig.database,
-        "entities": [
-          // "build/entity/authentication/Role.js",
-          // "build/entity/authentication/User.js",
-          // "build/entity/authentication/UserThumbnail.js"
-        ],
-        "migrations": [
-          "build/migration/*.js"
-        ],
-        "logging": false,
-        "synchronize": false,
-        "cli": {
-          "migrationsDir": "src/migration"
-        }
-      })
-    } catch (error: unknown) {
-      console.log("SQL Server database connection failed! ")
-      throw error
-    }
-
-  }
-
-}
-
-
 export class PostgreSQLContext extends DbContext {
 
   constructor() {
@@ -141,8 +102,6 @@ export class PostgreSQLContext extends DbContext {
 //     //     name: "admin"
 //     // })
 // })();
-
-
 
 // typeorm migration:run
 // typeorm migration:generate -n [migration_name]

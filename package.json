@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/service.ts",
+    "dev": "nodemon src/service.ts --env=development",
+    "stag": "nodemon src/service.ts --env=staging",
+    "prod": "nodemon src/service.ts --env=production",
     "build": "tsc",
     "migrate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -n migration",
     "update": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run",
