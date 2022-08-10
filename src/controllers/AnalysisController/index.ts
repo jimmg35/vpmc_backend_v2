@@ -4,7 +4,7 @@ import { PostgreSQLContext } from "../../dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
-import { getAge } from "../util"
+import { getAge } from "../../lib/util"
 import { IMarketCompare } from "./IAnalysis"
 
 const { OK } = StatusCodes

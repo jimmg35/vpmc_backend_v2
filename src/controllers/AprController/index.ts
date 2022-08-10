@@ -5,7 +5,7 @@ import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
 import { IGetTownInfo } from "./IApr"
-import { getAge } from "../util"
+import { getAge } from "../../lib/util"
 
 const { OK, NOT_FOUND } = StatusCodes
 
