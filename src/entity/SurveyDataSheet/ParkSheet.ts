@@ -2,20 +2,18 @@ import {
     Entity,
     Column,
     PrimaryGeneratedColumn,
-    ManyToOne
+    ManyToMany
 } from "typeorm"
-
-import { IsEmail, IsNotEmpty, Length } from "class-validator"
 import { User } from "../authentication/User"
 
 @Entity({ name: 'parksheet' })
 export class ParkSheet {
 
     @PrimaryGeneratedColumn("uuid")
-    sheetId: string
+    id: string
 
-    @ManyToOne(() => User, user => user.landSheets)
-    user: User
+    @ManyToMany(() => User, user => user.landSheets)
+    users: User[]
 
     @Column()
     assetType: string

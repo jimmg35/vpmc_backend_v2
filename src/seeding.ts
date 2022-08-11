@@ -18,8 +18,8 @@ export class Seeder {
     await role_repository.query("ALTER SEQUENCE role_id_seq RESTART WITH 1;")
     await role_repository.query("TRUNCATE TABLE role CASCADE;")
     await role_repository.insert([
-      { roleName: "user" },
-      { roleName: "admin" }
+      { name: "user" },
+      { name: "admin" }
     ])
   }
 

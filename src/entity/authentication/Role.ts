@@ -4,11 +4,9 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     ManyToMany,
-    JoinTable
+    JoinTable,
+    UpdateDateColumn
 } from "typeorm"
-
-import { IsEmail, IsNotEmpty, Length } from "class-validator"
-
 import { User } from "./User"
 import { App } from "./App"
 
@@ -18,10 +16,19 @@ export class Role {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({
-        length: 50,
-    })
-    roleName: string;
+    @Column()
+    name: string;
+
+    @Column()
+    code: string;
+
+    @Column()
+    @CreateDateColumn()
+    createdTime: Date;
+
+    @Column()
+    @UpdateDateColumn()
+    updatedTime: Date;
 
     @ManyToMany(type => User, user => user.roles) //設定bi-directional關聯
     users: User[];

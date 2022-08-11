@@ -104,4 +104,4 @@ export class PostgreSQLContext extends DbContext {
 // })();
 
 // typeorm migration:run
-// typeorm migration:generate -n [migration_name]
+// typeorm migration:generate -n migration

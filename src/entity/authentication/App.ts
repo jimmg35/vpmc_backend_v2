@@ -3,7 +3,9 @@ import {
     Column,
     PrimaryGeneratedColumn,
     CreateDateColumn,
-    ManyToMany
+    ManyToMany,
+    UpdateDateColumn,
+
 } from "typeorm"
 
 import { IsEmail, IsNotEmpty, Length } from "class-validator"
@@ -17,6 +19,20 @@ export class App {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
+    @Column()
+    name: string;
+
+    @Column()
+    code: string;
+
+    @Column()
+    @CreateDateColumn()
+    createdTime: Date;
+
+    @Column()
+    @UpdateDateColumn()
+    updatedTime: Date;
+
     @ManyToMany(type => Role, role => role.apps)
-    roles: Role[]
+    roles: Role[];
 }

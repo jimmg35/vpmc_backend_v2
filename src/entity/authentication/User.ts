@@ -35,10 +35,6 @@ export class User {
     @Column({ length: 20, nullable: true })
     alias: string
 
-    @ManyToMany(type => Role, role => role.users)
-    @JoinTable()
-    roles: Role[]
-
     @Column({ name: 'email' })
     @IsEmail({}, { message: 'Incorrect email' })
     @IsNotEmpty({ message: 'The email is required' })
@@ -56,18 +52,28 @@ export class User {
     @Column({ default: false })
     isActive: boolean
 
+    @Column({ nullable: true })
+    lastLoginTime?: Date
+
+
+
+
     @OneToMany(() => UserThumbnail, userthumbnail => userthumbnail.user)
     thumbnails: UserThumbnail[]
 
-    @OneToMany(() => LandSheet, landsheet => landsheet.user)
+    @ManyToMany(() => LandSheet, landsheet => landsheet.users)
+    @JoinTable()
     landSheets: LandSheet[]
 
-    @OneToMany(() => ParkSheet, parksheet => parksheet.user)
+    @ManyToMany(() => ParkSheet, parksheet => parksheet.users)
+    @JoinTable()
     parkSheets: ParkSheet[]
 
-    @OneToMany(() => BuildingSheet, buildingsheet => buildingsheet.user)
+    @ManyToMany(() => BuildingSheet, buildingsheet => buildingsheet.users)
+    @JoinTable()
     buildingSheets: BuildingSheet[]
 
-    @Column({ nullable: true })
-    lastLoginTime?: Date
+    @ManyToMany(type => Role, role => role.users)
+    @JoinTable()
+    roles: Role[]
 }

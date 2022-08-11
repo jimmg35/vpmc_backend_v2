@@ -331,7 +331,7 @@ export default class SurveyController extends BaseController {
       const landSheet_repository = this.dbcontext.connection.getRepository(LandSheet)
       const user = await user_repository.findOne({ userId: payload._userId })
       const landSheet = new LandSheet()
-      landSheet.user = user as User
+      landSheet.users = [user as User]
       landSheet.assetType = params_set.assetType
       landSheet.landMarkCounty = params_set.landMarkCounty
       landSheet.landMarkVillage = params_set.landMarkVillage
@@ -383,7 +383,7 @@ export default class SurveyController extends BaseController {
       const parkSheet_repository = this.dbcontext.connection.getRepository(ParkSheet)
       const user = await user_repository.findOne({ userId: payload._userId })
       const parkSheet = new ParkSheet()
-      parkSheet.user = user as User
+      parkSheet.users = [user as User]
       parkSheet.assetType = params_set.assetType
       parkSheet.landMarkCounty = params_set.landMarkCounty
       parkSheet.landMarkVillage = params_set.landMarkVillage
@@ -450,7 +450,7 @@ export default class SurveyController extends BaseController {
       const buildingSheet_repository = this.dbcontext.connection.getRepository(BuildingSheet)
       const user = await user_repository.findOne({ userId: payload._userId })
       const buildingSheet = new BuildingSheet()
-      buildingSheet.user = user as User
+      buildingSheet.users = [user as User]
       buildingSheet.assetType = params_set.assetType
       buildingSheet.landMarkCounty = params_set.landMarkCounty
       buildingSheet.landMarkVillage = params_set.landMarkVillage
