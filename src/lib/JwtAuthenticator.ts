@@ -1,3 +1,4 @@
+import { truncate } from 'fs'
 import jwt from 'jsonwebtoken'
 import { Role } from '../entity/authentication/Role'
 
@@ -61,7 +62,8 @@ export default class JwtAuthenticator {
    * @param token 
    * @returns 
    */
-  public isTokenValid = (token: string): any => {
+  public isTokenValid = (token: string | undefined): any => {
+    if (!token) return false
     try {
       const status = true
       const payload: any = jwt.verify(token, process.env.JWT_SECRET as string)
@@ -73,6 +75,20 @@ export default class JwtAuthenticator {
   }
 
   /**
+   * 從payload解析出role code陣列，並判斷是否符合條件
+   * @param payload 
+   * @returns 
+   */
+  public filterRole = (payload: any, roleCodes: string[], tokenStatus: boolean): boolean => {
+    if (!tokenStatus) return false
+    const roleCodeArray: string[] = payload.roles.map((r: any) => r.code)
+    for (let i = 0; i < roleCodeArray.length; i++) {
+      if (roleCodes.includes(roleCodeArray[i])) return true
+    }
+    return false
+  }
+
+  /**
    * 解析payload內容
    * @param token 
    */
@@ -81,6 +97,36 @@ export default class JwtAuthenticator {
     console.log(aa)
   }
 
+}
+
+export interface IisTokenPermitted {
+  token: string | undefined
+  jwtAuthenticator: JwtAuthenticator
+  permitRole: string[]
+}
+
+/** 
+ * 
+ * const permission = isTokenPermitted({
+ *   token: req.headers.authorization,
+ *   jwtAuthenticator: this.jwtAuthenticator,
+ *   permitRole: ['admin:ccis', 'user:ccis']
+ * })
+ * 
+ * @param param0 
+ * @returns 
+ */
+
+export const isTokenPermitted = ({
+  token,
+  jwtAuthenticator,
+  permitRole,
+}: IisTokenPermitted) => {
+  const { status, payload } = jwtAuthenticator.isTokenValid(token)
+  const permission = jwtAuthenticator.filterRole(
+    payload, permitRole, status
+  )
+  return permission
 }
 
 // (() => {

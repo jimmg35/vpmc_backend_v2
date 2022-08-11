@@ -4,28 +4,39 @@ import { PostgreSQLContext } from "../../dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import { App } from "../../entity/authentication/App"
+import { isTokenPermitted } from "../../lib/JwtAuthenticator"
+import JwtAuthenticator from "../../lib/JwtAuthenticator"
 
-const { OK, NOT_FOUND } = StatusCodes
+const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
 @autoInjectable()
 export default class AppController extends BaseController {
 
 
   public dbcontext: PostgreSQLContext
+  public jwtAuthenticator: JwtAuthenticator
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "list": "GET",
     "new": "POST",
     "edit": "PUT"
   }
 
-  constructor(dbcontext: PostgreSQLContext) {
+  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
     super()
+    this.jwtAuthenticator = jwtAuthenticator
     this.dbcontext = dbcontext
     this.dbcontext.connect()
   }
 
   public list = async (req: Request, res: Response) => {
     const params_set = { ...req.query }
+    const permission = isTokenPermitted({
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      permitRole: ['admin:ccis', 'admin:root']
+    })
+    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+
     const app_repository = this.dbcontext.connection.getRepository(App)
     const result = await app_repository.find({
       select: ['name', 'code']
@@ -35,6 +46,13 @@ export default class AppController extends BaseController {
 
   public new = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
+    const permission = isTokenPermitted({
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      permitRole: ['admin:ccis', 'admin:root']
+    })
+    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+
     const app_repository = this.dbcontext.connection.getRepository(App)
     const newApp = new App()
     newApp.name = params_set.name
@@ -45,6 +63,13 @@ export default class AppController extends BaseController {
 
   public edit = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
+    const permission = isTokenPermitted({
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      permitRole: ['admin:ccis', 'admin:root']
+    })
+    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+
     const app_repository = this.dbcontext.connection.getRepository(App)
     const record = await app_repository.find({
       where: {

@@ -67,7 +67,6 @@ export default class UserController extends BaseController {
         "status": "註冊失敗"
       })
     }
-
   }
 
   public assignRole = async (req: Request, res: Response) => {
