@@ -1,13 +1,14 @@
 {
   "type": "postgres",
-  "host": "140.122.82.98",
-  "port": 5433,
+  "host": "localhost",
+  "port": 5432,
   "username": "postgres",
   "password": "r2tadmiadc",
   "database": "vpmcnode",
   "entities": [
     "build/entity/authentication/Role.js",
     "build/entity/authentication/User.js",
+    "build/entity/authentication/App.js",
     "build/entity/authentication/UserThumbnail.js",
     "build/entity/SurveyDataSheet/LandSheet.js",
     "build/entity/SurveyDataSheet/ParkSheet.js",

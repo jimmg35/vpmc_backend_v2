@@ -1,8 +1,8 @@
 import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    ManyToOne
 } from "typeorm"
 
 import { IsEmail, IsNotEmpty, Length } from "class-validator"
@@ -11,144 +11,144 @@ import { User } from "../authentication/User"
 @Entity({ name: 'buildingsheet' })
 export class BuildingSheet {
 
-  @PrimaryGeneratedColumn("uuid")
-  sheetId: string
+    @PrimaryGeneratedColumn("uuid")
+    sheetId: string
 
-  @ManyToOne(() => User, user => user.landSheets)
-  user: User
+    @ManyToOne(() => User, user => user.landSheets)
+    user: User
 
-  @Column()
-  assetType: string
+    @Column()
+    assetType: string
 
-  @Column()
-  landMarkCounty: string
+    @Column()
+    landMarkCounty: string
 
-  @Column()
-  landMarkVillage: string
+    @Column()
+    landMarkVillage: string
 
-  @Column()
-  landMarkName: string
+    @Column()
+    landMarkName: string
 
-  @Column()
-  landMarkCode: string
+    @Column()
+    landMarkCode: string
 
-  @Column()
-  buildMarkCounty: string
+    @Column()
+    buildMarkCounty: string
 
-  @Column()
-  buildMarkVillage: string
+    @Column()
+    buildMarkVillage: string
 
-  @Column()
-  buildMarkName: string
+    @Column()
+    buildMarkName: string
 
-  @Column()
-  buildMarkCode: string
+    @Column()
+    buildMarkCode: string
 
-  @Column()
-  buildAddressCounty: string
+    @Column()
+    buildAddressCounty: string
 
-  @Column()
-  buildAddressVillage: string
+    @Column()
+    buildAddressVillage: string
 
-  @Column()
-  buildAddress: string
+    @Column()
+    buildAddress: string
 
-  @Column("double precision")
-  landArea: number
+    @Column("double precision")
+    landArea: number
 
-  @Column("double precision")
-  buildingArea: number
+    @Column("double precision")
+    buildingArea: number
 
-  @Column()
-  landRightsOwner: string
+    @Column()
+    landRightsOwner: string
 
-  @Column()
-  landRightsStatus: string
+    @Column()
+    landRightsStatus: string
 
-  @Column()
-  landRightsHolding: string
+    @Column()
+    landRightsHolding: string
 
-  @Column()
-  buildingRightsOwner: string
+    @Column()
+    buildingRightsOwner: string
 
-  @Column()
-  buildingRightsStatus: string
+    @Column()
+    buildingRightsStatus: string
 
-  @Column()
-  buildingRightsHolding: string
+    @Column()
+    buildingRightsHolding: string
 
-  @Column()
-  otherRights: string
+    @Column()
+    otherRights: string
 
-  @Column()
-  landUses: string
+    @Column()
+    landUses: string
 
-  @Column("double precision")
-  BuildingCoverageRatio: number
+    @Column("double precision")
+    BuildingCoverageRatio: number
 
-  @Column("double precision")
-  floorAreaRatio: number
+    @Column("double precision")
+    floorAreaRatio: number
 
-  @Column()
-  buildingUsage: string
+    @Column()
+    buildingUsage: string
 
-  @Column()
-  buildingStructure: string
+    @Column()
+    buildingStructure: string
 
-  @Column()
-  buildingFinishDate: Date
+    @Column()
+    buildingFinishDate: Date
 
-  @Column()
-  buildingUpFloor: number
+    @Column()
+    buildingUpFloor: number
 
-  @Column()
-  buildingDownFloor: number
+    @Column()
+    buildingDownFloor: number
 
-  @Column()
-  surveyFloor: number
+    @Column()
+    surveyFloor: number
 
-  @Column()
-  inspectionDate: Date
+    @Column()
+    inspectionDate: Date
 
-  @Column()
-  valueOpinionDate: Date
+    @Column()
+    valueOpinionDate: Date
 
-  @Column()
-  appraisalObject: string
+    @Column()
+    appraisalObject: string
 
-  @Column()
-  appraisalDescription: string
+    @Column()
+    appraisalDescription: string
 
-  @Column()
-  priceType: string
+    @Column()
+    priceType: string
 
-  @Column()
-  evaluationRightsType: string
+    @Column()
+    evaluationRightsType: string
 
-  @Column()
-  appraisalCondition: string
+    @Column()
+    appraisalCondition: string
 
-  @Column()
-  surveyorName: string
+    @Column()
+    surveyorName: string
 
-  @Column()
-  surveyDescription: string
+    @Column()
+    surveyDescription: string
 
-  @Column()
-  transcriptFileBase64: string
+    @Column()
+    transcriptFileBase64: string
 
-  @Column({
-    nullable: true
-  })
-  transcriptFileName: string
+    @Column({
+        nullable: true
+    })
+    transcriptFileName: string
 
-  @Column("text", { array: true })
-  photoFilesBase64: string[]
+    @Column("text", { array: true })
+    photoFilesBase64: string[]
 
-  @Column("text", {
-    array: true,
-    nullable: true
-  })
-  photoFilesName: string[]
+    @Column("text", {
+        array: true,
+        nullable: true
+    })
+    photoFilesName: string[]
 
 }
