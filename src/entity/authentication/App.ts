@@ -7,10 +7,6 @@ import {
     UpdateDateColumn,
 
 } from "typeorm"
-
-import { IsEmail, IsNotEmpty, Length } from "class-validator"
-
-import { User } from "./User"
 import { Role } from "./Role"
 
 @Entity({ name: "app" })
@@ -19,10 +15,10 @@ export class App {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
-    @Column()
+    @Column({ unique: true })
     code: string;
 
     @Column()

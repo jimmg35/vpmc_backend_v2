@@ -13,13 +13,13 @@ import { App } from "./App"
 @Entity({ name: "role" })
 export class Role {
 
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
-    @Column()
+    @Column({ unique: true })
     code: string;
 
     @Column()

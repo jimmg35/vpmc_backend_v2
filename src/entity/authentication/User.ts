@@ -3,14 +3,12 @@ import {
     Column,
     PrimaryGeneratedColumn,
     CreateDateColumn,
-    OneToOne,
-    JoinColumn,
     OneToMany,
     ManyToMany,
     JoinTable
 } from "typeorm"
 
-import { IsEmail, IsNotEmpty, Length } from "class-validator"
+import { IsEmail, IsNotEmpty } from "class-validator"
 import { UserThumbnail } from "./UserThumbnail"
 
 import { Role } from "./Role"

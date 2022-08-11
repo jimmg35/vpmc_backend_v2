@@ -29,7 +29,8 @@ export default class UserController extends BaseController {
     "sendPasswordResetEmail": "GET",
     "verifyPasswordResetEmail": "GET",
     "addThumbnail": "POST",
-    "getThumbnail": "POST"
+    "getThumbnail": "POST",
+    "assignRole": "PUT"
   }
 
   constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
@@ -49,7 +50,9 @@ export default class UserController extends BaseController {
       const user = new User()
       user.username = params_set.username
       user.password = util.encodeBase64(sha256(params_set.password))
-      user.roles = await role_repository.findByIds(params_set.roleId)
+      user.roles = await role_repository.find({
+        code: params_set.roleCode
+      })
       user.email = params_set.email
       user.phoneNumber = params_set.phoneNumber
       user.mailConfirmationToken = generateVerificationToken(128)
@@ -65,6 +68,27 @@ export default class UserController extends BaseController {
       })
     }
 
+  }
+
+  public assignRole = async (req: Request, res: Response) => {
+    const params_set = { ...req.body }
+    const user_repository = this.dbcontext.connection.getRepository(User)
+    const role_repository = this.dbcontext.connection.getRepository(Role)
+    const user = await user_repository.find({
+      where: {
+        userId: params_set.userId
+      }
+    })
+    if (user.length === 0) return res.status(NOT_FOUND).json({ "status": "can't find this user" })
+    const codeArray: string[] = params_set.roleCodeArray.split(',')
+    const codeWrappedInQuotes = codeArray.map((code: string) => `'${code}'`)
+    const withCommasInBetween = codeWrappedInQuotes.join(',')
+    user[0].roles = await role_repository
+      .createQueryBuilder()
+      .where(`code in (${withCommasInBetween})`)
+      .getMany()
+    await user_repository.save(user)
+    return res.status(OK).json({ "status": "success" })
   }
 
   public isEmailUsed = async (req: Request, res: Response) => {

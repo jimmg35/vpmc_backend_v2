@@ -7,6 +7,7 @@ import { UserThumbnail } from "./entity/authentication/UserThumbnail"
 import { LandSheet } from "./entity/SurveyDataSheet/LandSheet"
 import { BuildingSheet } from "./entity/SurveyDataSheet/BuildingSheet"
 import { ParkSheet } from "./entity/SurveyDataSheet/ParkSheet"
+import { App } from "./entity/authentication/App"
 
 export interface IDbConfig {
   type: string
@@ -59,19 +60,7 @@ export class PostgreSQLContext extends DbContext {
         "password": this.dbConfig.password,
         "database": this.dbConfig.database,
         "entities": [
-          Role, User, UserThumbnail, LandSheet, BuildingSheet, ParkSheet
-          // "./entity/authentication/Role.ts",
-          // "./entity/authentication/User.ts",
-          // "./entity/authentication/UserThumbnail.ts",
-          // "./entity/SurveyDataSheet/LandSheet.ts",
-          // "./entity/SurveyDataSheet/ParkSheet.ts",
-          // "./entity/SurveyDataSheet/BuildingSheet.ts",
-          // "./entity/authentication/Role.js",
-          // "./entity/authentication/User.js",
-          // "./entity/authentication/UserThumbnail.js",
-          // "./entity/SurveyDataSheet/LandSheet.js",
-          // "./entity/SurveyDataSheet/ParkSheet.js",
-          // "./entity/SurveyDataSheet/BuildingSheet.js"
+          Role, User, UserThumbnail, LandSheet, BuildingSheet, ParkSheet, App
         ],
         "migrations": [
           "./migration/*.js"
