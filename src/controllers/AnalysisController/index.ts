@@ -6,6 +6,9 @@ import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
 import { getAge } from "../../lib/util"
 import { IMarketCompare } from "./IAnalysis"
+import JwtAuthenticator, { isRoleHasApp } from "../../lib/JwtAuthenticator"
+import { Role } from "../../entity/authentication/Role"
+import { App } from "../../entity/authentication/App"
 
 const { OK } = StatusCodes
 
@@ -117,14 +120,16 @@ export default class AnalysisController extends BaseController {
 
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
+  public jwtAuthenticator: JwtAuthenticator
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "marketCompare": "GET",
     "marketCompareStatistic": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
+  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer, jwtAuthenticator: JwtAuthenticator) {
     super()
     this.queryStringStorer = queryStringStorer
+    this.jwtAuthenticator = jwtAuthenticator
     this.dbcontext = dbcontext
     this.dbcontext.connect()
   }
@@ -260,6 +265,16 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompare = async (req: Request, res: Response) => {
+
+
+    isRoleHasApp({
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      appCode: 'function:marketCompare',
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+
     interface IResult {
       transactiontime: string
       completiontime: string
@@ -268,7 +283,6 @@ export default class AnalysisController extends BaseController {
     }
     const props = { ...req.query } as unknown as IMarketCompare
     const queryString = buileMarketCompareQuery(props, this.queryStringStorer)
-    console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {

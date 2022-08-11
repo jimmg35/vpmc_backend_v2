@@ -1,7 +1,8 @@
-import { truncate } from 'fs'
 import jwt from 'jsonwebtoken'
+import { truncate } from 'fs'
+import { Repository } from 'typeorm'
 import { Role } from '../entity/authentication/Role'
-
+import { App } from '../entity/authentication/App'
 
 export interface tokenPayload {
   _userId: string
@@ -79,9 +80,12 @@ export default class JwtAuthenticator {
    * @param payload 
    * @returns 
    */
-  public filterRole = (payload: any, roleCodes: string[], tokenStatus: boolean): boolean => {
-    if (!tokenStatus) return false
+  public filterRole = (payload: any): string[] => {
     const roleCodeArray: string[] = payload.roles.map((r: any) => r.code)
+    return roleCodeArray
+  }
+
+  public isRoleQualify = (roleCodeArray: string[], roleCodes: string[]): boolean => {
     for (let i = 0; i < roleCodeArray.length; i++) {
       if (roleCodes.includes(roleCodeArray[i])) return true
     }
@@ -99,13 +103,11 @@ export default class JwtAuthenticator {
 
 }
 
-export interface IisTokenPermitted {
-  token: string | undefined
-  jwtAuthenticator: JwtAuthenticator
-  permitRole: string[]
-}
+
 
 /** 
+ * 
+ * 判斷token是否有效並且符合要求的權限
  * 
  * const permission = isTokenPermitted({
  *   token: req.headers.authorization,
@@ -116,17 +118,53 @@ export interface IisTokenPermitted {
  * @param param0 
  * @returns 
  */
-
+export interface IisTokenPermitted {
+  token: string | undefined
+  jwtAuthenticator: JwtAuthenticator
+  permitRole: string[]
+}
 export const isTokenPermitted = ({
   token,
   jwtAuthenticator,
   permitRole,
 }: IisTokenPermitted) => {
   const { status, payload } = jwtAuthenticator.isTokenValid(token)
-  const permission = jwtAuthenticator.filterRole(
-    payload, permitRole, status
-  )
+  if (!status) return false
+  const userRoles = jwtAuthenticator.filterRole(payload)
+  const permission = jwtAuthenticator.isRoleQualify(userRoles, permitRole)
   return permission
+}
+
+
+/**
+ * 動態判斷給定的roleCode陣列是否擁有該app
+ */
+export interface IisRoleHasApp {
+  token: string | undefined
+  jwtAuthenticator: JwtAuthenticator
+  appCode: string
+  role_repository: Repository<Role>
+  app_repository: Repository<App>
+}
+export const isRoleHasApp = async ({
+  token,
+  jwtAuthenticator,
+  appCode,
+  role_repository,
+  app_repository
+}: IisRoleHasApp) => {
+  const { status, payload } = jwtAuthenticator.isTokenValid(token)
+  if (!status) return false
+  const roleCodes = jwtAuthenticator.filterRole(payload)
+  const codeWrappedInQuotes = roleCodes.map((code: string) => `'${code}'`)
+  const withCommasInBetween = codeWrappedInQuotes.join(',')
+  const roleApps = await role_repository.createQueryBuilder("role")
+    .where(`role.code in (${withCommasInBetween})`)
+    .leftJoinAndSelect("role.apps", "app").getMany()
+
+  console.log('===========================')
+  console.log(roleCodes)
+  console.log(roleApps)
 }
 
 // (() => {
