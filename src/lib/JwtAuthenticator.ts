@@ -155,16 +155,18 @@ export const isRoleHasApp = async ({
 }: IisRoleHasApp) => {
   const { status, payload } = jwtAuthenticator.isTokenValid(token)
   if (!status) return false
-  const roleCodes = jwtAuthenticator.filterRole(payload)
-  const codeWrappedInQuotes = roleCodes.map((code: string) => `'${code}'`)
+  const userRoleCodes = jwtAuthenticator.filterRole(payload)
+  const codeWrappedInQuotes = userRoleCodes.map((code: string) => `'${code}'`)
   const withCommasInBetween = codeWrappedInQuotes.join(',')
   const roleApps = await role_repository.createQueryBuilder("role")
     .where(`role.code in (${withCommasInBetween})`)
-    .leftJoinAndSelect("role.apps", "app").getMany()
-
-  console.log('===========================')
-  console.log(roleCodes)
-  console.log(roleApps)
+    .leftJoinAndSelect("role.apps", "app").getMany();
+  for (let i = 0; i < roleApps.length; i++) {
+    for (let j = 0; j < roleApps[i].apps.length; j++) {
+      if (roleApps[i].apps[j].code === appCode) return true
+    }
+  }
+  return false
 }
 
 // (() => {

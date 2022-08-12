@@ -10,7 +10,7 @@ import JwtAuthenticator, { isRoleHasApp } from "../../lib/JwtAuthenticator"
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
 
-const { OK } = StatusCodes
+const { OK, UNAUTHORIZED } = StatusCodes
 
 const square = 3.305785
 
@@ -265,15 +265,14 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompare = async (req: Request, res: Response) => {
-
-
-    isRoleHasApp({
+    const status = await isRoleHasApp({
+      appCode: 'function:marketCompare',
       token: req.headers.authorization,
       jwtAuthenticator: this.jwtAuthenticator,
-      appCode: 'function:marketCompare',
       role_repository: this.dbcontext.connection.getRepository(Role),
       app_repository: this.dbcontext.connection.getRepository(App)
     })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
     interface IResult {
       transactiontime: string
@@ -424,6 +423,15 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompareStatistic = async (req: Request, res: Response) => {
+    const status = await isRoleHasApp({
+      appCode: 'function:marketCompare',
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
     interface IResult {
       buildingType: number
       priceWithoutParking: number
