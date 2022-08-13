@@ -9,7 +9,7 @@ export interface tokenPayload {
   username: string
   email: string
   alias: string
-  roles: Role[]
+  // roles: Role[]
 }
 
 export default class JwtAuthenticator {
@@ -67,7 +67,7 @@ export default class JwtAuthenticator {
     if (!token) return false
     try {
       const status = true
-      const payload: any = jwt.verify(token, process.env.JWT_SECRET as string)
+      const payload = jwt.verify(token, process.env.JWT_SECRET as string)
       // console.log(payload)
       return { status, payload }
     } catch {
