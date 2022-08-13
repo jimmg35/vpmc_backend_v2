@@ -6,14 +6,18 @@ import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
 import { IGetTownInfo } from "./IApr"
 import { getAge } from "../../lib/util"
+import JwtAuthenticator, { isRoleHasApp } from "../../lib/JwtAuthenticator"
+import { Role } from "../../entity/authentication/Role"
+import { App } from "../../entity/authentication/App"
 
-const { OK, NOT_FOUND } = StatusCodes
+const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
 @autoInjectable()
 export default class AprController extends BaseController {
 
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
+  public jwtAuthenticator: JwtAuthenticator
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "getTownInfo": "GET",
     "post": "POST",
@@ -21,9 +25,10 @@ export default class AprController extends BaseController {
     "getCommiteeByAprIds": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
+  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer, jwtAuthenticator: JwtAuthenticator) {
     super()
     this.queryStringStorer = queryStringStorer
+    this.jwtAuthenticator = jwtAuthenticator
     this.dbcontext = dbcontext
     this.dbcontext.connect()
   }

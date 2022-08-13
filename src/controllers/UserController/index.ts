@@ -9,13 +9,13 @@ import { autoInjectable } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
+import { isTokenPermitted } from "../../lib/JwtAuthenticator"
 import JwtAuthenticator from "../../lib/JwtAuthenticator"
 
 const { BAD_REQUEST, OK, NOT_FOUND, FORBIDDEN, UNAUTHORIZED } = StatusCodes
 
 @autoInjectable()
 export default class UserController extends BaseController {
-
 
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
@@ -70,6 +70,13 @@ export default class UserController extends BaseController {
   }
 
   public assignRole = async (req: Request, res: Response) => {
+    const permission = isTokenPermitted({
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      permitRole: ['admin:ccis', 'admin:root']
+    })
+    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+
     const params_set = { ...req.body }
     const user_repository = this.dbcontext.connection.getRepository(User)
     const role_repository = this.dbcontext.connection.getRepository(Role)

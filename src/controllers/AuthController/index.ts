@@ -71,9 +71,15 @@ export default class AuthController extends BaseController {
 
     const user_repository = this.dbcontext.connection.getRepository(User)
     const user = await user_repository.findOne({ email: params_set.email as string })
-    const userRoles = await user_repository.createQueryBuilder("user")
+    const userRoles = await user_repository
+      .createQueryBuilder("user")
       .where("user.userId = :userId", { userId: user?.userId })
-      .leftJoinAndSelect("user.roles", "role").getOne()
+      .leftJoinAndSelect("user.roles", "role")
+      .leftJoinAndSelect("role.apps", "app")
+      .getOne()
+    if (!userRoles) return res.status(UNAUTHORIZED).json({ "status": "此帳號尚未被授予任何權限" })
+
+    console.log(userRoles.roles[0].apps)
 
     if (user == undefined) {
       return res.status(UNAUTHORIZED).json({

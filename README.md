@@ -10,3 +10,36 @@ createdb -U postgres -p 5432 vpmcnode | psql -U postgres -p 5432 vpmcnode < E:\v
 # 用port殺掉程序(windows)
 netstat -ano | findstr :9085
 taskkill /PID 14592 /F
+
+
+# 管理員API 權限設置
++ UserController
+    + ['admin:ccis', 'admin:root'] : UserController/assignRole
++ RoleController
+    + ['admin:ccis', 'admin:root'] : RoleController/list
+    + ['admin:ccis', 'admin:root'] : RoleController/new
+    + ['admin:ccis', 'admin:root'] : RoleController/edit
+    + ['admin:ccis', 'admin:root'] : RoleController/assignApp
+    + ['admin:ccis', 'admin:root'] : RoleController/listAppByRole
++ AppController
+    + ['admin:ccis', 'admin:root'] : AppController/list
+    + ['admin:ccis', 'admin:root'] : AppController/new
+    + ['admin:ccis', 'admin:root'] : AppController/edit
+
+
+# API APP 權限對照
++ AnalysisController
+    + function:marketCompare : AnalysisController/marketCompare
+    + function:marketCompare : AnalysisController/marketCompareStatistic
++ CommiteeController
+    + function:aprMap : CommiteeController/listTownAvg
+    + function:aprMap : CommiteeController/listCommiteeByExtent
+    + function:aprMap : CommiteeController/getSimpleInfo
+    + function:aprMap : CommiteeController/getAprInfo
+    + function:aprMap : CommiteeController/getCommiteeInfoById
+
+
+# 尚未綁APP權限的API
++ AprController
++ FileController
+

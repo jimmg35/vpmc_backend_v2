@@ -5,14 +5,19 @@ import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import QueryStringStorer from "../../lib/QueryStringStorer"
 import { IGetAprInfo, IGetSimpleInfo, IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
+import { isRoleHasApp } from "../../lib/JwtAuthenticator"
+import JwtAuthenticator from "../../lib/JwtAuthenticator"
+import { Role } from "../../entity/authentication/Role"
+import { App } from "../../entity/authentication/App"
 
-const { OK, NOT_FOUND } = StatusCodes
+const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
 @autoInjectable()
 export default class CommiteeController extends BaseController {
 
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
+  public jwtAuthenticator: JwtAuthenticator
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "listTownAvg": "GET",
     "listCommiteeByExtent": "GET",
@@ -22,9 +27,10 @@ export default class CommiteeController extends BaseController {
     "getCommiteeInfoById": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
+  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer, jwtAuthenticator: JwtAuthenticator) {
     super()
     this.queryStringStorer = queryStringStorer
+    this.jwtAuthenticator = jwtAuthenticator
     this.dbcontext = dbcontext
     this.dbcontext.connect()
   }
@@ -75,6 +81,16 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public listTownAvg = async (req: Request, res: Response) => {
+    const status = await isRoleHasApp({
+      appCode: 'function:aprMap',
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
+
     const props: IListTownAvgProps = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.listTownAvg.format(
@@ -132,6 +148,14 @@ export default class CommiteeController extends BaseController {
    *               type: array
    */
   public listCommiteeByExtent = async (req: Request, res: Response) => {
+    const status = await isRoleHasApp({
+      appCode: 'function:aprMap',
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
     const props: IListCommiteeByExtent = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.listCommiteeByExtent.format(
@@ -173,6 +197,15 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getSimpleInfo = async (req: Request, res: Response) => {
+    const status = await isRoleHasApp({
+      appCode: 'function:aprMap',
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
     const props: IGetSimpleInfo = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.getSimpleInfo.format(
@@ -207,6 +240,15 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getAprInfo = async (req: Request, res: Response) => {
+    const status = await isRoleHasApp({
+      appCode: 'function:aprMap',
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
     const props: IGetAprInfo = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.getAprInfo.format(
@@ -241,6 +283,15 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getCommiteeInfoById = async (req: Request, res: Response) => {
+    const status = await isRoleHasApp({
+      appCode: 'function:aprMap',
+      token: req.headers.authorization,
+      jwtAuthenticator: this.jwtAuthenticator,
+      role_repository: this.dbcontext.connection.getRepository(Role),
+      app_repository: this.dbcontext.connection.getRepository(App)
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
     const props = { ...req.query } as unknown as { commiteeId: string }
     const result = await this.dbcontext.connection.query(
       `SELECT * FROM commitee WHERE id = '${props.commiteeId}'`
