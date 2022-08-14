@@ -1,13 +1,14 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { User } from "../../entity/authentication/User"
 import { Role } from "../../entity/authentication/Role"
-import { PostgreSQLContext } from "../../dbcontext"
+import { App } from "../../entity/authentication/App"
+import { PostgreSQLContext } from "../../lib/dbcontext"
 import { Request, Response } from 'express'
-import { autoInjectable } from "tsyringe"
+import { autoInjectable, inject } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
-import JwtAuthenticator from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator, tokenPayload } from "../../lib/JwtAuthenticator"
 
 const { OK, UNAUTHORIZED } = StatusCodes
 
@@ -20,14 +21,17 @@ export default class AuthController extends BaseController {
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "authenticate": "POST",
     "refresh": "POST",
-    "validate": "POST"
+    "validate": "POST",
+    "listRoles": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+  ) {
     super()
-    this.dbcontext = dbcontext
-    this.dbcontext.connect()
     this.jwtAuthenticator = jwtAuthenticator
+    this.dbcontext = dbcontext
   }
 
   /**
@@ -68,12 +72,8 @@ export default class AuthController extends BaseController {
    */
   public authenticate = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
-
     const user_repository = this.dbcontext.connection.getRepository(User)
     const user = await user_repository.findOne({ email: params_set.email as string })
-    const userRoles = await user_repository.createQueryBuilder("user")
-      .where("user.userId = :userId", { userId: user?.userId })
-      .leftJoinAndSelect("user.roles", "role").getOne()
 
     if (user == undefined) {
       return res.status(UNAUTHORIZED).json({
@@ -87,7 +87,7 @@ export default class AuthController extends BaseController {
       })
     }
 
-    if (user?.password == util.encodeBase64(sha256(params_set.password)) && user.isActive == true && userRoles) {
+    if (user?.password == util.encodeBase64(sha256(params_set.password)) && user.isActive == true) {
       user.lastLoginTime = new Date()
       console.log(`user ${user.username} login at ${user.lastLoginTime}`)
       await user_repository.save(user)
@@ -95,8 +95,7 @@ export default class AuthController extends BaseController {
         _userId: user.userId,
         username: user.username,
         email: user.email,
-        alias: user.alias,
-        roles: userRoles.roles
+        alias: user.alias
       })
       return res.status(OK).json({
         "token": token
@@ -152,12 +151,32 @@ export default class AuthController extends BaseController {
   public validate = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    // console.log(payload)
-    if (status) {
+    console.log(payload)
+    if (status && payload) {
       return res.status(OK).json(payload)
     }
     return res.status(UNAUTHORIZED).json({
       "status": "token is not valid"
     })
   }
+
+  public listRoles = async (req: Request, res: Response) => {
+    const { status, payload } = this.jwtAuthenticator.isTokenValid(req.headers.authorization)
+    const payloads = payload as tokenPayload
+    if (status) {
+      const user_repository = this.dbcontext.connection.getRepository(User)
+      const userRoles = await user_repository
+        .createQueryBuilder("user")
+        .where("user.userId = :userId", { userId: payloads._userId })
+        .leftJoinAndSelect("user.roles", "role")
+        .leftJoinAndSelect("role.apps", "app")
+        .getOne()
+      if (!userRoles) return res.status(UNAUTHORIZED).json({ "status": "此帳號尚未被授予任何權限" })
+      return res.status(OK).json(userRoles.roles)
+    }
+    return res.status(UNAUTHORIZED).json({
+      "status": "token is not valid"
+    })
+  }
+
 }

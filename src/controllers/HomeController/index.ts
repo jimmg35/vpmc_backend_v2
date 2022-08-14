@@ -1,8 +1,11 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
-import { autoInjectable } from "tsyringe"
+import { PostgreSQLContext } from "../../lib/dbcontext"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
+import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
 const { OK } = StatusCodes
 
@@ -16,10 +19,14 @@ export default class HomeController extends BaseController {
     "post": "POST"
   }
 
-  constructor(dbcontext: PostgreSQLContext) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('queryStringStorer') queryStringStorer: QueryStringStorer,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
   }
 
   public get = async (req: Request, res: Response) => {

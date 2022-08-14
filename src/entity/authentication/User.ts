@@ -1,16 +1,14 @@
 import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  OneToOne,
-  JoinColumn,
-  OneToMany,
-  ManyToMany,
-  JoinTable
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    OneToMany,
+    ManyToMany,
+    JoinTable
 } from "typeorm"
 
-import { IsEmail, IsNotEmpty, Length } from "class-validator"
+import { IsEmail, IsNotEmpty } from "class-validator"
 import { UserThumbnail } from "./UserThumbnail"
 
 import { Role } from "./Role"
@@ -21,53 +19,59 @@ import { BuildingSheet } from "../SurveyDataSheet/BuildingSheet"
 @Entity({ name: 'user' })
 export class User {
 
-  @PrimaryGeneratedColumn("uuid")
-  userId!: string
+    @PrimaryGeneratedColumn("uuid")
+    userId!: string
 
-  @Column({ length: 20, unique: true })
-  @IsNotEmpty({ message: 'username is required' })
-  username!: string
+    @Column({ length: 20, unique: true })
+    @IsNotEmpty({ message: 'username is required' })
+    username!: string
 
-  @Column()
-  @IsNotEmpty({ message: 'password is required' })
-  password!: string
+    @Column()
+    @IsNotEmpty({ message: 'password is required' })
+    password!: string
 
-  @Column({ length: 20, nullable: true })
-  alias: string
+    @Column({ length: 20, nullable: true })
+    alias: string
 
-  @ManyToMany(type => Role, role => role.users)
-  @JoinTable()
-  roles: Role[]
+    @Column({ name: 'email' })
+    @IsEmail({}, { message: 'Incorrect email' })
+    @IsNotEmpty({ message: 'The email is required' })
+    email!: string
 
-  @Column({ name: 'email' })
-  @IsEmail({}, { message: 'Incorrect email' })
-  @IsNotEmpty({ message: 'The email is required' })
-  email!: string
+    @Column({ nullable: true })
+    phoneNumber: string
 
-  @Column({ nullable: true })
-  phoneNumber: string
+    @CreateDateColumn()
+    createdDate!: Date
 
-  @CreateDateColumn()
-  createdDate!: Date
+    @Column({ length: 128 })
+    mailConfirmationToken!: string
 
-  @Column({ length: 128 })
-  mailConfirmationToken!: string
+    @Column({ default: false })
+    isActive: boolean
 
-  @Column({ default: false })
-  isActive: boolean
+    @Column({ nullable: true })
+    lastLoginTime?: Date
 
-  @OneToMany(() => UserThumbnail, userthumbnail => userthumbnail.user)
-  thumbnails: UserThumbnail[]
 
-  @OneToMany(() => LandSheet, landsheet => landsheet.user)
-  landSheets: LandSheet[]
 
-  @OneToMany(() => ParkSheet, parksheet => parksheet.user)
-  parkSheets: ParkSheet[]
 
-  @OneToMany(() => BuildingSheet, buildingsheet => buildingsheet.user)
-  buildingSheets: BuildingSheet[]
+    @OneToMany(() => UserThumbnail, userthumbnail => userthumbnail.user)
+    thumbnails: UserThumbnail[]
 
-  @Column({ nullable: true })
-  lastLoginTime?: Date
+    @ManyToMany(() => LandSheet, landsheet => landsheet.users)
+    @JoinTable()
+    landSheets: LandSheet[]
+
+    @ManyToMany(() => ParkSheet, parksheet => parksheet.users)
+    @JoinTable()
+    parkSheets: ParkSheet[]
+
+    @ManyToMany(() => BuildingSheet, buildingsheet => buildingsheet.users)
+    @JoinTable()
+    buildingSheets: BuildingSheet[]
+
+    @ManyToMany(type => Role, role => role.users)
+    @JoinTable()
+    roles: Role[]
 }

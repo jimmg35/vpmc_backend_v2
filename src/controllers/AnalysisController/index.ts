@@ -1,13 +1,17 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
-import { autoInjectable } from "tsyringe"
+import { PostgreSQLContext } from "../../lib/dbcontext"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import QueryStringStorer from "../../lib/QueryStringStorer"
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
 import { getAge } from "../../lib/util"
 import { IMarketCompare } from "./IAnalysis"
+import { JwtAuthenticator, isRoleHasApp } from "../../lib/JwtAuthenticator"
+import { Role } from "../../entity/authentication/Role"
+import { App } from "../../entity/authentication/App"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
-const { OK } = StatusCodes
+const { OK, UNAUTHORIZED } = StatusCodes
 
 const square = 3.305785
 
@@ -117,16 +121,24 @@ export default class AnalysisController extends BaseController {
 
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
+  public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "marketCompare": "GET",
     "marketCompareStatistic": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('queryStringStorer') queryStringStorer: QueryStringStorer,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.queryStringStorer = queryStringStorer
+    this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
   }
 
   /**
@@ -260,6 +272,12 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompare = async (req: Request, res: Response) => {
+    const status = await this.permissionFilter.isRoleHasApp({
+      appCode: 'function:marketCompare',
+      token: req.headers.authorization
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
     interface IResult {
       transactiontime: string
       completiontime: string
@@ -268,7 +286,6 @@ export default class AnalysisController extends BaseController {
     }
     const props = { ...req.query } as unknown as IMarketCompare
     const queryString = buileMarketCompareQuery(props, this.queryStringStorer)
-    console.log(queryString)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {
@@ -410,6 +427,12 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompareStatistic = async (req: Request, res: Response) => {
+    const status = await this.permissionFilter.isRoleHasApp({
+      appCode: 'function:marketCompare',
+      token: req.headers.authorization
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
     interface IResult {
       buildingType: number
       priceWithoutParking: number
