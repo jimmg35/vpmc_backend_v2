@@ -1,12 +1,12 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
+import { PostgreSQLContext } from "../../lib/dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import QueryStringStorer from "../../lib/QueryStringStorer"
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
 import { IGetTownInfo } from "./IApr"
 import { getAge } from "../../lib/util"
-import JwtAuthenticator, { isRoleHasApp } from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator, isRoleHasApp } from "../../lib/JwtAuthenticator"
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
 

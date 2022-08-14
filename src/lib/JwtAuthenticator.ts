@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { truncate } from 'fs'
+import { container } from 'tsyringe'
 import { Repository } from 'typeorm'
 import { Role } from '../entity/authentication/Role'
 import { App } from '../entity/authentication/App'
@@ -12,12 +12,12 @@ export interface tokenPayload {
   // roles: Role[]
 }
 
-export default class JwtAuthenticator {
+export class JwtAuthenticator {
 
   public expireTime: number
 
   constructor() {
-    this.expireTime = 3600
+    this.expireTime = 7200
   }
 
   /**
@@ -103,7 +103,9 @@ export default class JwtAuthenticator {
 
 }
 
+const jwtAuthenticator = container.resolve(JwtAuthenticator)
 
+export default jwtAuthenticator
 
 /** 
  * 

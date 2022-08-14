@@ -1,6 +1,6 @@
 import './pre-start'
 import { autoInjectable } from "tsyringe"
-import { PostgreSQLContext } from "./dbcontext"
+import { PostgreSQLContext } from "./lib/dbcontext"
 import { Role } from "./entity/authentication/Role"
 import { container } from "tsyringe"
 import { App } from "./entity/authentication/App"

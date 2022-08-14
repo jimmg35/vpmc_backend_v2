@@ -1,14 +1,15 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
-import { autoInjectable } from "tsyringe"
+import { PostgreSQLContext } from "../../lib/dbcontext"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import QueryStringStorer from "../../lib/QueryStringStorer"
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
 import { getAge } from "../../lib/util"
 import { IMarketCompare } from "./IAnalysis"
-import JwtAuthenticator, { isRoleHasApp } from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator, isRoleHasApp } from "../../lib/JwtAuthenticator"
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
 const { OK, UNAUTHORIZED } = StatusCodes
 
@@ -121,17 +122,24 @@ export default class AnalysisController extends BaseController {
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "marketCompare": "GET",
     "marketCompareStatistic": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('queryStringStorer') queryStringStorer: QueryStringStorer,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.queryStringStorer = queryStringStorer
     this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
+    // this.dbcontext.connect()
   }
 
   /**
@@ -265,14 +273,16 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompare = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
-      appCode: 'function:marketCompare',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
-    })
-    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+
+    // this.permissionFilter.isRoleHasApp()
+    // const status = await isRoleHasApp({
+    //   appCode: 'function:marketCompare',
+    //   token: req.headers.authorization,
+    //   jwtAuthenticator: this.jwtAuthenticator,
+    //   role_repository: this.dbcontext.connection.getRepository(Role),
+    //   app_repository: this.dbcontext.connection.getRepository(App)
+    // })
+    // if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
     interface IResult {
       transactiontime: string

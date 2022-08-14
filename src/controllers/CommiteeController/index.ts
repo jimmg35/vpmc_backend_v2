@@ -1,14 +1,15 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
-import { autoInjectable } from "tsyringe"
+import { PostgreSQLContext } from "../../lib/dbcontext"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import QueryStringStorer from "../../lib/QueryStringStorer"
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
 import { IGetAprInfo, IGetSimpleInfo, IListCommiteeByExtent, IListTownAvgProps } from "./ICommitee"
 import { isRoleHasApp } from "../../lib/JwtAuthenticator"
-import JwtAuthenticator from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
 const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
@@ -18,6 +19,7 @@ export default class CommiteeController extends BaseController {
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "listTownAvg": "GET",
     "listCommiteeByExtent": "GET",
@@ -27,12 +29,18 @@ export default class CommiteeController extends BaseController {
     "getCommiteeInfoById": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('queryStringStorer') queryStringStorer: QueryStringStorer,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.queryStringStorer = queryStringStorer
     this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
+    // this.dbcontext.connect()
   }
 
   /**
@@ -81,14 +89,14 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public listTownAvg = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
-      appCode: 'function:aprMap',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
-    })
-    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+    // const status = await isRoleHasApp({
+    //   appCode: 'function:aprMap',
+    //   token: req.headers.authorization,
+    //   jwtAuthenticator: this.jwtAuthenticator,
+    //   role_repository: this.dbcontext.connection.getRepository(Role),
+    //   app_repository: this.dbcontext.connection.getRepository(App)
+    // })
+    // if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
 
     const props: IListTownAvgProps = { ...req.query }

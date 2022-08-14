@@ -1,13 +1,13 @@
 import { error } from "console"
 import { createConnection, Connection, ConnectionOptions, MssqlParameter } from "typeorm"
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
-import { User } from "./entity/authentication/User"
-import { Role } from "./entity/authentication/Role"
-import { UserThumbnail } from "./entity/authentication/UserThumbnail"
-import { LandSheet } from "./entity/SurveyDataSheet/LandSheet"
-import { BuildingSheet } from "./entity/SurveyDataSheet/BuildingSheet"
-import { ParkSheet } from "./entity/SurveyDataSheet/ParkSheet"
-import { App } from "./entity/authentication/App"
+import { User } from "../entity/authentication/User"
+import { Role } from "../entity/authentication/Role"
+import { UserThumbnail } from "../entity/authentication/UserThumbnail"
+import { LandSheet } from "../entity/SurveyDataSheet/LandSheet"
+import { BuildingSheet } from "../entity/SurveyDataSheet/BuildingSheet"
+import { ParkSheet } from "../entity/SurveyDataSheet/ParkSheet"
+import { App } from "../entity/authentication/App"
 
 export interface IDbConfig {
   type: string
@@ -80,6 +80,11 @@ export class PostgreSQLContext extends DbContext {
 
   }
 }
+
+const dbcontext = new PostgreSQLContext()
+dbcontext.connect()
+
+export default dbcontext
 
 // // 輸入假資料
 // (async () => {

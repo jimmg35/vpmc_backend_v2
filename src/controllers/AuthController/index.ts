@@ -2,13 +2,13 @@ import { BaseController, HTTPMETHOD } from "../BaseController"
 import { User } from "../../entity/authentication/User"
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
-import { PostgreSQLContext } from "../../dbcontext"
+import { PostgreSQLContext } from "../../lib/dbcontext"
 import { Request, Response } from 'express'
 import { autoInjectable } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
-import JwtAuthenticator, { tokenPayload } from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator, tokenPayload } from "../../lib/JwtAuthenticator"
 
 const { OK, UNAUTHORIZED } = StatusCodes
 

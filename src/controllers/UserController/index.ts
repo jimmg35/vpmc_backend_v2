@@ -3,14 +3,14 @@ import { BaseController, HTTPMETHOD } from '../BaseController'
 import { Role } from "../../entity/authentication/Role"
 import { User } from "../../entity/authentication/User"
 import { UserThumbnail } from "../../entity/authentication/UserThumbnail"
-import { PostgreSQLContext } from "../../dbcontext"
+import { PostgreSQLContext } from "../../lib/dbcontext"
 import { Request, Response } from 'express'
 import { autoInjectable } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
 import { isTokenPermitted } from "../../lib/JwtAuthenticator"
-import JwtAuthenticator from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
 
 const { BAD_REQUEST, OK, NOT_FOUND, FORBIDDEN, UNAUTHORIZED } = StatusCodes
 

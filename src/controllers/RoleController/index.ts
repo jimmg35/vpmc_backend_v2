@@ -1,11 +1,11 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
+import { PostgreSQLContext } from "../../lib/dbcontext"
 import { autoInjectable } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
-import JwtAuthenticator from "../../lib/JwtAuthenticator"
+import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
 import { isTokenPermitted } from "../../lib/JwtAuthenticator"
 
 const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
