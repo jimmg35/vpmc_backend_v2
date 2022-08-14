@@ -5,12 +5,12 @@ import { User } from "../../entity/authentication/User"
 import { UserThumbnail } from "../../entity/authentication/UserThumbnail"
 import { PostgreSQLContext } from "../../lib/dbcontext"
 import { Request, Response } from 'express'
-import { autoInjectable } from "tsyringe"
+import { autoInjectable, inject } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
-import { isTokenPermitted } from "../../lib/JwtAuthenticator"
-import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
+import { isTokenPermitted, JwtAuthenticator } from "../../lib/JwtAuthenticator"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
 const { BAD_REQUEST, OK, NOT_FOUND, FORBIDDEN, UNAUTHORIZED } = StatusCodes
 
@@ -19,6 +19,7 @@ export default class UserController extends BaseController {
 
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "register": "POST",
     "isEmailUsed": "GET",
@@ -33,11 +34,15 @@ export default class UserController extends BaseController {
     "assignRole": "PUT"
   }
 
-  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
     this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
   }
 
 
@@ -70,9 +75,8 @@ export default class UserController extends BaseController {
   }
 
   public assignRole = async (req: Request, res: Response) => {
-    const permission = isTokenPermitted({
+    const permission = await this.permissionFilter.isRolePermitted({
       token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
       permitRole: ['admin:ccis', 'admin:root']
     })
     if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
@@ -267,7 +271,7 @@ export default class UserController extends BaseController {
   public addThumbnail = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const userThumbnail_repository = this.dbcontext.connection.getRepository(UserThumbnail)
       const user = await user_repository.findOne({ userId: payload._userId })
@@ -287,7 +291,7 @@ export default class UserController extends BaseController {
   public getThumbnail = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const user = await user_repository.createQueryBuilder("user")
         .where("user.userId = :userId", { userId: payload._userId })

@@ -1,12 +1,13 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
 import { PostgreSQLContext } from "../../lib/dbcontext"
-import { autoInjectable } from "tsyringe"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
 import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
 import { isTokenPermitted } from "../../lib/JwtAuthenticator"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
 const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
@@ -16,6 +17,7 @@ export default class RoleController extends BaseController {
 
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "list": "GET",
     "new": "POST",
@@ -24,18 +26,20 @@ export default class RoleController extends BaseController {
     "listAppByRole": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
-    this.dbcontext = dbcontext
-    this.dbcontext.connect()
     this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
+    this.dbcontext = dbcontext
   }
 
   public list = async (req: Request, res: Response) => {
-    const params_set = { ...req.query }
-    const permission = isTokenPermitted({
+    const permission = await this.permissionFilter.isRolePermitted({
       token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
       permitRole: ['admin:ccis', 'admin:root']
     })
     if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
@@ -49,9 +53,8 @@ export default class RoleController extends BaseController {
 
   public new = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
-    const permission = isTokenPermitted({
+    const permission = await this.permissionFilter.isRolePermitted({
       token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
       permitRole: ['admin:ccis', 'admin:root']
     })
     if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
@@ -66,9 +69,8 @@ export default class RoleController extends BaseController {
 
   public edit = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
-    const permission = isTokenPermitted({
+    const permission = await this.permissionFilter.isRolePermitted({
       token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
       permitRole: ['admin:ccis', 'admin:root']
     })
     if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
@@ -87,9 +89,8 @@ export default class RoleController extends BaseController {
 
   public assignApp = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
-    const permission = isTokenPermitted({
+    const permission = await this.permissionFilter.isRolePermitted({
       token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
       permitRole: ['admin:ccis', 'admin:root']
     })
     if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
@@ -115,9 +116,8 @@ export default class RoleController extends BaseController {
 
   public listAppByRole = async (req: Request, res: Response) => {
     const params_set = { ...req.query }
-    const permission = isTokenPermitted({
+    const permission = await this.permissionFilter.isRolePermitted({
       token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
       permitRole: ['admin:ccis', 'admin:root']
     })
     if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })

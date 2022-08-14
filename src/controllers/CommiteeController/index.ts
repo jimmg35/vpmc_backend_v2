@@ -40,7 +40,6 @@ export default class CommiteeController extends BaseController {
     this.jwtAuthenticator = jwtAuthenticator
     this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
-    // this.dbcontext.connect()
   }
 
   /**
@@ -89,16 +88,11 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public listTownAvg = async (req: Request, res: Response) => {
-    // const status = await isRoleHasApp({
-    //   appCode: 'function:aprMap',
-    //   token: req.headers.authorization,
-    //   jwtAuthenticator: this.jwtAuthenticator,
-    //   role_repository: this.dbcontext.connection.getRepository(Role),
-    //   app_repository: this.dbcontext.connection.getRepository(App)
-    // })
-    // if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
-
-
+    const status = await this.permissionFilter.isRoleHasApp({
+      appCode: 'function:aprMap',
+      token: req.headers.authorization
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
     const props: IListTownAvgProps = { ...req.query }
     const result = await this.dbcontext.connection.query(
       this.queryStringStorer.commitee.listTownAvg.format(
@@ -156,12 +150,9 @@ export default class CommiteeController extends BaseController {
    *               type: array
    */
   public listCommiteeByExtent = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
+    const status = await this.permissionFilter.isRoleHasApp({
       appCode: 'function:aprMap',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
+      token: req.headers.authorization
     })
     if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
     const props: IListCommiteeByExtent = { ...req.query }
@@ -205,12 +196,9 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getSimpleInfo = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
+    const status = await this.permissionFilter.isRoleHasApp({
       appCode: 'function:aprMap',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
+      token: req.headers.authorization
     })
     if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
@@ -248,12 +236,9 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getAprInfo = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
+    const status = await this.permissionFilter.isRoleHasApp({
       appCode: 'function:aprMap',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
+      token: req.headers.authorization
     })
     if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
@@ -291,12 +276,9 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getCommiteeInfoById = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
+    const status = await this.permissionFilter.isRoleHasApp({
       appCode: 'function:aprMap',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
+      token: req.headers.authorization
     })
     if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 

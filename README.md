@@ -13,9 +13,9 @@ taskkill /PID 14592 /F
 
 
 # 管理員API 權限設置
-+ UserController
++ UserController | DONE
     + ['admin:ccis', 'admin:root'] : UserController/assignRole
-+ RoleController
++ RoleController | DONE
     + ['admin:ccis', 'admin:root'] : RoleController/list
     + ['admin:ccis', 'admin:root'] : RoleController/new
     + ['admin:ccis', 'admin:root'] : RoleController/edit
@@ -28,10 +28,10 @@ taskkill /PID 14592 /F
 
 
 # API APP 權限對照
-+ AnalysisController
++ AnalysisController | DONE
     + function:marketCompare : AnalysisController/marketCompare
     + function:marketCompare : AnalysisController/marketCompareStatistic
-+ CommiteeController
++ CommiteeController | DONE
     + function:aprMap : CommiteeController/listTownAvg
     + function:aprMap : CommiteeController/listCommiteeByExtent
     + function:aprMap : CommiteeController/getSimpleInfo

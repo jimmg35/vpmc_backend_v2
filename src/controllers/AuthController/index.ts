@@ -4,7 +4,7 @@ import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
 import { PostgreSQLContext } from "../../lib/dbcontext"
 import { Request, Response } from 'express'
-import { autoInjectable } from "tsyringe"
+import { autoInjectable, inject } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
@@ -25,11 +25,13 @@ export default class AuthController extends BaseController {
     "listRoles": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+  ) {
     super()
-    this.dbcontext = dbcontext
-    this.dbcontext.connect()
     this.jwtAuthenticator = jwtAuthenticator
+    this.dbcontext = dbcontext
   }
 
   /**
@@ -149,7 +151,8 @@ export default class AuthController extends BaseController {
   public validate = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    console.log(payload)
+    if (status && payload) {
       return res.status(OK).json(payload)
     }
     return res.status(UNAUTHORIZED).json({
@@ -162,10 +165,9 @@ export default class AuthController extends BaseController {
     const payloads = payload as tokenPayload
     if (status) {
       const user_repository = this.dbcontext.connection.getRepository(User)
-      const user = await user_repository.findOne({ email: payloads.email })
       const userRoles = await user_repository
         .createQueryBuilder("user")
-        .where("user.userId = :userId", { userId: user?.userId })
+        .where("user.userId = :userId", { userId: payloads._userId })
         .leftJoinAndSelect("user.roles", "role")
         .leftJoinAndSelect("role.apps", "app")
         .getOne()

@@ -1,7 +1,7 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
 import { PostgreSQLContext } from "../../lib/dbcontext"
-import { autoInjectable } from "tsyringe"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
 import { Protected, extractPostParams, extractGetParams } from "../../lib/util"
 import { JwtAuthenticator } from "../../lib/JwtAuthenticator"
@@ -29,11 +29,13 @@ export default class SurveyController extends BaseController {
     "createBuildingSheet": "POST"
   }
 
-  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator
+  ) {
     super()
-    this.dbcontext = dbcontext
-    this.dbcontext.connect()
     this.jwtAuthenticator = jwtAuthenticator
+    this.dbcontext = dbcontext
   }
 
   public deleteLandSheet = async (req: Request, res: Response) => {
@@ -302,7 +304,7 @@ export default class SurveyController extends BaseController {
   public listDataSheets = async (req: Request, res: Response) => {
     const params_set = extractGetParams(req)
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token as string)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const user = await user_repository.createQueryBuilder("user")
         .where("user.userId = :userId", { userId: payload._userId })
@@ -326,7 +328,7 @@ export default class SurveyController extends BaseController {
   public createLandSheet = async (req: Request, res: Response) => {
     const params_set = extractPostParams(req)
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const landSheet_repository = this.dbcontext.connection.getRepository(LandSheet)
       const user = await user_repository.findOne({ userId: payload._userId })
@@ -378,7 +380,7 @@ export default class SurveyController extends BaseController {
   public createParkSheet = async (req: Request, res: Response) => {
     const params_set = extractPostParams(req)
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const parkSheet_repository = this.dbcontext.connection.getRepository(ParkSheet)
       const user = await user_repository.findOne({ userId: payload._userId })
@@ -445,7 +447,7 @@ export default class SurveyController extends BaseController {
   public createBuildingSheet = async (req: Request, res: Response) => {
     const params_set = extractPostParams(req)
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const buildingSheet_repository = this.dbcontext.connection.getRepository(BuildingSheet)
       const user = await user_repository.findOne({ userId: payload._userId })

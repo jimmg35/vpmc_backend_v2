@@ -139,7 +139,6 @@ export default class AnalysisController extends BaseController {
     this.jwtAuthenticator = jwtAuthenticator
     this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
-    // this.dbcontext.connect()
   }
 
   /**
@@ -273,16 +272,11 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompare = async (req: Request, res: Response) => {
-
-    // this.permissionFilter.isRoleHasApp()
-    // const status = await isRoleHasApp({
-    //   appCode: 'function:marketCompare',
-    //   token: req.headers.authorization,
-    //   jwtAuthenticator: this.jwtAuthenticator,
-    //   role_repository: this.dbcontext.connection.getRepository(Role),
-    //   app_repository: this.dbcontext.connection.getRepository(App)
-    // })
-    // if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+    const status = await this.permissionFilter.isRoleHasApp({
+      appCode: 'function:marketCompare',
+      token: req.headers.authorization
+    })
+    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
     interface IResult {
       transactiontime: string
@@ -433,12 +427,9 @@ export default class AnalysisController extends BaseController {
    *               type: object
    */
   public marketCompareStatistic = async (req: Request, res: Response) => {
-    const status = await isRoleHasApp({
+    const status = await this.permissionFilter.isRoleHasApp({
       appCode: 'function:marketCompare',
-      token: req.headers.authorization,
-      jwtAuthenticator: this.jwtAuthenticator,
-      role_repository: this.dbcontext.connection.getRepository(Role),
-      app_repository: this.dbcontext.connection.getRepository(App)
+      token: req.headers.authorization
     })
     if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
