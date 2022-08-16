@@ -28,10 +28,10 @@ taskkill /PID 14592 /F
 
 
 # API APP 權限對照
-+ AnalysisController | DONE
++ AnalysisController | DONE | DONE
     + function:marketCompare : AnalysisController/marketCompare
     + function:marketCompare : AnalysisController/marketCompareStatistic
-+ CommiteeController | DONE
++ CommiteeController | DONE | 
     + function:aprMap : CommiteeController/listTownAvg
     + function:aprMap : CommiteeController/listCommiteeByExtent
     + function:aprMap : CommiteeController/getSimpleInfo

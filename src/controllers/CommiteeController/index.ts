@@ -236,11 +236,11 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getAprInfo = async (req: Request, res: Response) => {
-    const status = await this.permissionFilter.isRoleHasApp({
-      appCode: 'function:aprMap',
-      token: req.headers.authorization
-    })
-    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+    // const status = await this.permissionFilter.isRoleHasApp({
+    //   appCode: 'function:aprMap',
+    //   token: req.headers.authorization
+    // })
+    // if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
     const props: IGetAprInfo = { ...req.query }
     const result = await this.dbcontext.connection.query(
@@ -276,11 +276,11 @@ export default class CommiteeController extends BaseController {
    *               type: object
    */
   public getCommiteeInfoById = async (req: Request, res: Response) => {
-    const status = await this.permissionFilter.isRoleHasApp({
-      appCode: 'function:aprMap',
-      token: req.headers.authorization
-    })
-    if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
+    // const status = await this.permissionFilter.isRoleHasApp({
+    //   appCode: 'function:aprMap',
+    //   token: req.headers.authorization
+    // })
+    // if (!status) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
     const props = { ...req.query } as unknown as { commiteeId: string }
     const result = await this.dbcontext.connection.query(
