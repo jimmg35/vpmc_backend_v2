@@ -15,6 +15,7 @@ import { Role } from "./Role"
 import { LandSheet } from "../SurveyDataSheet/LandSheet"
 import { ParkSheet } from "../SurveyDataSheet/ParkSheet"
 import { BuildingSheet } from "../SurveyDataSheet/BuildingSheet"
+import { UserLoginLogs } from "./UserLoginLogs"
 
 @Entity({ name: 'user' })
 export class User {
@@ -74,4 +75,8 @@ export class User {
     @ManyToMany(type => Role, role => role.users)
     @JoinTable()
     roles: Role[]
+
+
+    @OneToMany(() => UserLoginLogs, userloginlogs => userloginlogs.user)
+    loginlogs: UserLoginLogs[]
 }
