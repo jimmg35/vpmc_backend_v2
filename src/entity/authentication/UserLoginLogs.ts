@@ -32,6 +32,9 @@ export class UserLoginLogs {
     @Column('boolean', { name: 'isSuccessed', default: true })
     isSuccessed: boolean
 
+    @CreateDateColumn()
+    loginTime: Date
+
     @ManyToOne(() => User, user => user.loginlogs)
     user: User
 

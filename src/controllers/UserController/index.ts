@@ -11,6 +11,7 @@ import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
 import { isTokenPermitted, JwtAuthenticator } from "../../lib/JwtAuthenticator"
 import { PermissionFilter } from "../../lib/PermissionFilter"
+import { UserLoginLogs } from "../../entity/authentication/UserLoginLogs"
 
 const { BAD_REQUEST, OK, NOT_FOUND, FORBIDDEN, UNAUTHORIZED } = StatusCodes
 
@@ -31,7 +32,8 @@ export default class UserController extends BaseController {
     "verifyPasswordResetEmail": "GET",
     "addThumbnail": "POST",
     "getThumbnail": "POST",
-    "assignRole": "PUT"
+    "assignRole": "PUT",
+    "loginLogs": "GET"
   }
 
   constructor(
@@ -43,6 +45,15 @@ export default class UserController extends BaseController {
     this.dbcontext = dbcontext
     this.jwtAuthenticator = jwtAuthenticator
     this.permissionFilter = permissionFilter
+  }
+
+  public loginLogs = async (req: Request, res: Response) => {
+    const log_repository = this.dbcontext.connection.getRepository(UserLoginLogs)
+    const result = await log_repository.find({
+      select: ['email', 'entry', 'isSuccessed', 'loginTime'],
+      take: 100
+    })
+    return res.status(OK).json(result)
   }
 
 

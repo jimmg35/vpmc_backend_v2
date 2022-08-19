@@ -99,8 +99,13 @@ export default class AuthController extends BaseController {
         "status": "此帳號尚未註冊"
       })
     }
-
     if (user?.isActive == false) {
+      await this.userLogger.logLogin({
+        email: user.email,
+        entry: 'default',
+        isSuccessed: false,
+        user: user
+      })
       return res.status(UNAUTHORIZED).json({
         "status": "此帳號尚未認證，請去Email收信"
       })
@@ -108,8 +113,13 @@ export default class AuthController extends BaseController {
 
     if (user?.password == util.encodeBase64(sha256(params_set.password)) && user.isActive == true) {
       user.lastLoginTime = new Date()
-      console.log(`user ${user.username} login at ${user.lastLoginTime}`)
-      await user_repository.save(user)
+      const savedUser = await user_repository.save(user)
+      await this.userLogger.logLogin({
+        email: user.email,
+        entry: 'default',
+        isSuccessed: true,
+        user: savedUser
+      })
       const token = this.jwtAuthenticator.signToken({
         _userId: user.userId,
         username: user.username,
@@ -120,6 +130,13 @@ export default class AuthController extends BaseController {
         "token": token
       })
     }
+
+    await this.userLogger.logLogin({
+      email: user.email,
+      entry: 'default',
+      isSuccessed: false,
+      user: user
+    })
 
     return res.status(UNAUTHORIZED).json({
       "status": "帳號或密碼錯誤"
@@ -170,6 +187,7 @@ export default class AuthController extends BaseController {
 
       const status = await validateGoogleToken(params_set.token)
       if (status) {
+        // 新增User
         const user_repository = this.dbcontext.connection.getRepository(User)
         const role_repository = this.dbcontext.connection.getRepository(Role)
         const user = new User()
@@ -180,7 +198,15 @@ export default class AuthController extends BaseController {
           code: 'user:basic'
         })
         user.mailConfirmationToken = generateVerificationToken(128)
-        await user_repository.save(user)
+        // 儲存User Entity
+        const savedUser = await user_repository.save(user)
+        // 紀錄User Log
+        await this.userLogger.logLogin({
+          email: user.email,
+          entry: 'google',
+          isSuccessed: true,
+          user: savedUser
+        })
         const registeredUser = await user_repository.findOne({ email: params_set.email as string })
         if (!registeredUser) return res.status(INTERNAL_SERVER_ERROR).json({
           "status": "user hasn't registered"
@@ -195,14 +221,20 @@ export default class AuthController extends BaseController {
           "token": token
         })
       }
+
       return res.status(UNAUTHORIZED).json({
         "status": "google token auth failed"
       })
 
     } else { // 如果使用者已經用google auth登入過
       user.lastLoginTime = new Date()
-      console.log(`user ${user.username} login at ${user.lastLoginTime}`)
-      await user_repository.save(user)
+      const savedUser = await user_repository.save(user)
+      await this.userLogger.logLogin({
+        email: user.email,
+        entry: 'google',
+        isSuccessed: true,
+        user: savedUser
+      })
       const token = this.jwtAuthenticator.signToken({
         _userId: user.userId,
         username: user.username,
@@ -259,7 +291,6 @@ export default class AuthController extends BaseController {
   public validate = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    console.log(payload)
     if (status && payload) {
       return res.status(OK).json(payload)
     }
