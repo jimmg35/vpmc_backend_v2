@@ -9,6 +9,7 @@
     "build/src/entity/authentication/Role.js",
     "build/src/entity/authentication/User.js",
     "build/src/entity/authentication/App.js",
+    "build/src/entity/authentication/UserLoginLogs.js",
     "build/src/entity/authentication/UserThumbnail.js",
     "build/src/entity/SurveyDataSheet/LandSheet.js",
     "build/src/entity/SurveyDataSheet/ParkSheet.js",

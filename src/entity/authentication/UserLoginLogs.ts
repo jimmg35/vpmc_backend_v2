@@ -30,7 +30,7 @@ export class UserLoginLogs {
     entry: string
 
     @Column('boolean', { name: 'isSuccessed', default: true })
-    isSuccessed: string
+    isSuccessed: boolean
 
     @ManyToOne(() => User, user => user.loginlogs)
     user: User

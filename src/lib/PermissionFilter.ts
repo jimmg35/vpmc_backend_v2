@@ -1,8 +1,5 @@
-import { singleton, inject, autoInjectable, container } from 'tsyringe'
-import { Repository } from 'typeorm'
+import { autoInjectable, container } from 'tsyringe'
 import { User } from '../entity/authentication/User'
-import { Role } from '../entity/authentication/Role'
-import { App } from '../entity/authentication/App'
 import { PostgreSQLContext } from './dbcontext'
 import { JwtAuthenticator } from './JwtAuthenticator'
 

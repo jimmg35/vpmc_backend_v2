@@ -3,6 +3,8 @@ import dbcontext from "../lib/dbcontext"
 import jwtAuthenticator from "../lib/JwtAuthenticator"
 import queryStringStorer from "../lib/QueryStringStorer"
 import permissionFilter from "../lib/PermissionFilter"
+import userLogger from "../lib/Loggers/UserLogger"
+
 import {
   HomeController,
   UserController,
@@ -19,6 +21,7 @@ container.register('dbcontext', { useValue: dbcontext })
 container.register('jwtAuthenticator', { useValue: jwtAuthenticator })
 container.register('queryStringStorer', { useValue: queryStringStorer })
 container.register('permissionFilter', { useValue: permissionFilter })
+container.register('userLogger', { useValue: userLogger })
 
 const homeController = container.resolve(HomeController)
 const userController = container.resolve(UserController)

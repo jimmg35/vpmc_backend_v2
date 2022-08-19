@@ -11,6 +11,7 @@ import util from "tweetnacl-util"
 import https from 'https'
 import { JwtAuthenticator, tokenPayload } from "../../lib/JwtAuthenticator"
 import { generateVerificationToken } from "../../lib/util"
+import { UserLogger } from "../../lib/Loggers/UserLogger"
 
 const { OK, UNAUTHORIZED, INTERNAL_SERVER_ERROR } = StatusCodes
 
@@ -32,6 +33,7 @@ export default class AuthController extends BaseController {
 
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
+  public userLogger: UserLogger
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "authenticate": "POST",
     "googleAuth": "POST",
@@ -43,9 +45,11 @@ export default class AuthController extends BaseController {
   constructor(
     @inject('dbcontext') dbcontext: PostgreSQLContext,
     @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('userLogger') userLogger: UserLogger
   ) {
     super()
     this.jwtAuthenticator = jwtAuthenticator
+    this.userLogger = userLogger
     this.dbcontext = dbcontext
   }
 

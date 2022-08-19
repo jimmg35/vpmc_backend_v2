@@ -8,6 +8,7 @@ import { LandSheet } from "../entity/SurveyDataSheet/LandSheet"
 import { BuildingSheet } from "../entity/SurveyDataSheet/BuildingSheet"
 import { ParkSheet } from "../entity/SurveyDataSheet/ParkSheet"
 import { App } from "../entity/authentication/App"
+import { UserLoginLogs } from "../entity/authentication/UserLoginLogs"
 
 export interface IDbConfig {
   type: string
@@ -60,7 +61,8 @@ export class PostgreSQLContext extends DbContext {
         "password": this.dbConfig.password,
         "database": this.dbConfig.database,
         "entities": [
-          Role, User, UserThumbnail, LandSheet, BuildingSheet, ParkSheet, App
+          Role, User, UserThumbnail, LandSheet,
+          BuildingSheet, ParkSheet, App, UserLoginLogs
         ],
         "migrations": [
           "./migration/*.js"
