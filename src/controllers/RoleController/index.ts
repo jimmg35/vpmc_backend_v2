@@ -38,15 +38,15 @@ export default class RoleController extends BaseController {
   }
 
   public list = async (req: Request, res: Response) => {
-    const permission = await this.permissionFilter.isRolePermitted({
-      token: req.headers.authorization,
-      permitRole: ['admin:ccis', 'admin:root']
-    })
-    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+    // const permission = await this.permissionFilter.isRolePermitted({
+    //   token: req.headers.authorization,
+    //   permitRole: ['admin:ccis', 'admin:root']
+    // })
+    // if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
 
     const role_repository = this.dbcontext.connection.getRepository(Role)
     const result = await role_repository.find({
-      select: ['name', 'code']
+      select: ['id', 'name', 'code', 'updatedTime']
     })
     return res.status(OK).json(result)
   }
@@ -116,11 +116,11 @@ export default class RoleController extends BaseController {
 
   public listAppByRole = async (req: Request, res: Response) => {
     const params_set = { ...req.query }
-    const permission = await this.permissionFilter.isRolePermitted({
-      token: req.headers.authorization,
-      permitRole: ['admin:ccis', 'admin:root']
-    })
-    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+    // const permission = await this.permissionFilter.isRolePermitted({
+    //   token: req.headers.authorization,
+    //   permitRole: ['admin:ccis', 'admin:root']
+    // })
+    // if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
 
     const role_repository = this.dbcontext.connection.getRepository(Role)
     const roleApps = await role_repository.createQueryBuilder("role")
