@@ -35,15 +35,15 @@ export default class AppController extends BaseController {
   }
 
   public list = async (req: Request, res: Response) => {
-    const permission = await this.permissionFilter.isRolePermitted({
-      token: req.headers.authorization,
-      permitRole: ['admin:ccis', 'admin:root']
-    })
-    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+    // const permission = await this.permissionFilter.isRolePermitted({
+    //   token: req.headers.authorization,
+    //   permitRole: ['admin:ccis', 'admin:root']
+    // })
+    // if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
 
     const app_repository = this.dbcontext.connection.getRepository(App)
     const result = await app_repository.find({
-      select: ['name', 'code']
+      select: ['id', 'name', 'code', 'updatedTime']
     })
     return res.status(OK).json(result)
   }
