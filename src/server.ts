@@ -36,6 +36,7 @@ export class Server {
    * 註冊middlewares
    */
   private addMiddlewares = (): void => {
+    this.app.set('trust proxy', true)
     this.app.use(express.urlencoded({
       extended: true,
       limit: '50mb'

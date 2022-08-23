@@ -99,7 +99,7 @@ export class JwtAuthenticator {
    */
   public decodePayload = (token: string) => {
     let aa = jwt.decode(token)
-    console.log(aa)
+    // console.log(aa)
   }
 
 }

@@ -11,6 +11,7 @@ import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
 import { isTokenPermitted, JwtAuthenticator } from "../../lib/JwtAuthenticator"
 import { PermissionFilter } from "../../lib/PermissionFilter"
+import { UserLoginLogs } from "../../entity/authentication/UserLoginLogs"
 
 const { BAD_REQUEST, OK, NOT_FOUND, FORBIDDEN, UNAUTHORIZED } = StatusCodes
 
@@ -31,7 +32,9 @@ export default class UserController extends BaseController {
     "verifyPasswordResetEmail": "GET",
     "addThumbnail": "POST",
     "getThumbnail": "POST",
-    "assignRole": "PUT"
+    "assignRole": "PUT",
+    "loginLogs": "GET",
+    "list": "GET"
   }
 
   constructor(
@@ -43,6 +46,31 @@ export default class UserController extends BaseController {
     this.dbcontext = dbcontext
     this.jwtAuthenticator = jwtAuthenticator
     this.permissionFilter = permissionFilter
+  }
+
+  public loginLogs = async (req: Request, res: Response) => {
+    const log_repository = this.dbcontext.connection.getRepository(UserLoginLogs)
+    const result = await log_repository.find({
+      select: ['email', 'entry', 'isSuccessed', 'loginTime'],
+      take: 100
+    })
+    return res.status(OK).json(result)
+  }
+
+  public list = async (req: Request, res: Response) => {
+    const user_repository = this.dbcontext.connection.getRepository(User)
+
+    const user = await user_repository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.roles", "role")
+      .leftJoinAndSelect("user.thumbnails", "userthumbnail")
+      .select([
+        'user.userId', 'user.email', 'user.createdDate',
+        'user.lastLoginTime', 'user.isActive', 'role.name',
+        'role.code', 'userthumbnail.thumbnailPath', 'user.phoneNumber'
+      ])
+      .getMany()
+    return res.status(OK).json(user)
   }
 
 
@@ -276,7 +304,7 @@ export default class UserController extends BaseController {
       const userThumbnail_repository = this.dbcontext.connection.getRepository(UserThumbnail)
       const user = await user_repository.findOne({ userId: payload._userId })
       const userThumbnail = new UserThumbnail()
-      userThumbnail.thumbnail = params_set.thumbnailBase64
+      userThumbnail.thumbnailPath = params_set.thumbnailBase64
       userThumbnail.user = user as User
       await userThumbnail_repository.save(userThumbnail)
       return res.status(OK).json({

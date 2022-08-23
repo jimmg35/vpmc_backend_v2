@@ -25,17 +25,17 @@ export class UserLogger {
   public logLogin = async ({
     email, entry, isSuccessed, user
   }: ILogLogin) => {
-
     const loginLogs_repo = this.dbcontext.connection.getRepository(UserLoginLogs)
     const log = new UserLoginLogs()
     log.email = email
     log.entry = entry
     log.isSuccessed = isSuccessed
-
-
+    log.user = user
+    await loginLogs_repo.save(log)
   }
 
 }
 
 const userLogger = container.resolve(UserLogger)
 export default userLogger
+
