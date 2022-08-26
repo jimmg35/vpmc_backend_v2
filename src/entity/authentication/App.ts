@@ -4,14 +4,13 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     ManyToMany,
-    JoinTable,
-    UpdateDateColumn
-} from "typeorm"
-import { User } from "./User"
-import { App } from "./App"
+    UpdateDateColumn,
 
-@Entity({ name: "role" })
-export class Role {
+} from "typeorm"
+import { Role } from "./Role"
+
+@Entity({ name: "app" })
+export class App {
 
     @PrimaryGeneratedColumn("uuid")
     id: string;
@@ -30,10 +29,6 @@ export class Role {
     @UpdateDateColumn()
     updatedTime: Date;
 
-    @ManyToMany(type => User, user => user.roles) //設定bi-directional關聯
-    users: User[];
-
-    @ManyToMany(type => App, app => app.roles) //設定bi-directional關聯
-    @JoinTable()
-    apps: App[];
+    @ManyToMany(type => Role, role => role.apps)
+    roles: Role[];
 }

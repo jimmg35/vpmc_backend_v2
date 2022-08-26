@@ -1,9 +1,9 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
-import { autoInjectable } from "tsyringe"
+import { PostgreSQLContext } from "../../lib/dbcontext"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import QueryStringStorer from "../../lib/QueryStringStorer"
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
 import { IListTownsByCounty } from "./IUtility"
 
 const { OK, NOT_FOUND } = StatusCodes
@@ -21,11 +21,14 @@ export default class UtilityController extends BaseController {
     "getCoordinateByCountyTownName": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('queryStringStorer') queryStringStorer: QueryStringStorer
+  ) {
     super()
     this.queryStringStorer = queryStringStorer
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
+
   }
 
   /**

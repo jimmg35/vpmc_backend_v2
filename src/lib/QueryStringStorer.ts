@@ -1,3 +1,4 @@
+import { container } from "tsyringe"
 
 interface IStringMap {
   [key: string]: string
@@ -28,7 +29,7 @@ interface IAnalysisMap extends IStringMap {
   marketCompareStatistic: string
 }
 
-export default class QueryStringStorer {
+export class QueryStringStorer {
   public commitee: ICommiteeStringMap
   public apr: IAprStringMap
   public utility: IUtilityMap
@@ -265,3 +266,6 @@ export default class QueryStringStorer {
     }
   }
 }
+
+const queryStringStorer = container.resolve(QueryStringStorer)
+export default queryStringStorer

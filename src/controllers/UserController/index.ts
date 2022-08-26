@@ -1,24 +1,26 @@
-import { generateVerificationToken, sendVerifcationEmail, sendPasswordResetEmail } from "./util"
-import { BaseController, HTTPMETHOD } from './BaseController'
-import { Role } from "../entity/authentication/Role"
-import { User } from "../entity/authentication/User"
-import { UserThumbnail } from "../entity/authentication/UserThumbnail"
-import { PostgreSQLContext } from "../dbcontext"
+import { generateVerificationToken, sendVerifcationEmail, sendPasswordResetEmail } from "../../lib/util"
+import { BaseController, HTTPMETHOD } from '../BaseController'
+import { Role } from "../../entity/authentication/Role"
+import { User } from "../../entity/authentication/User"
+import { UserThumbnail } from "../../entity/authentication/UserThumbnail"
+import { PostgreSQLContext } from "../../lib/dbcontext"
 import { Request, Response } from 'express'
-import { autoInjectable } from "tsyringe"
+import { autoInjectable, inject } from "tsyringe"
 import sha256 from "fast-sha256"
 import StatusCodes from 'http-status-codes'
 import util from "tweetnacl-util"
-import JwtAuthenticator from "../lib/JwtAuthenticator"
+import { isTokenPermitted, JwtAuthenticator } from "../../lib/JwtAuthenticator"
+import { PermissionFilter } from "../../lib/PermissionFilter"
+import { UserLoginLogs } from "../../entity/authentication/UserLoginLogs"
 
 const { BAD_REQUEST, OK, NOT_FOUND, FORBIDDEN, UNAUTHORIZED } = StatusCodes
 
 @autoInjectable()
 export default class UserController extends BaseController {
 
-
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "register": "POST",
     "isEmailUsed": "GET",
@@ -29,14 +31,46 @@ export default class UserController extends BaseController {
     "sendPasswordResetEmail": "GET",
     "verifyPasswordResetEmail": "GET",
     "addThumbnail": "POST",
-    "getThumbnail": "POST"
+    "getThumbnail": "POST",
+    "assignRole": "PUT",
+    "loginLogs": "GET",
+    "list": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, jwtAuthenticator: JwtAuthenticator) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
     this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
+  }
+
+  public loginLogs = async (req: Request, res: Response) => {
+    const log_repository = this.dbcontext.connection.getRepository(UserLoginLogs)
+    const result = await log_repository.find({
+      select: ['email', 'entry', 'isSuccessed', 'loginTime'],
+      take: 100
+    })
+    return res.status(OK).json(result)
+  }
+
+  public list = async (req: Request, res: Response) => {
+    const user_repository = this.dbcontext.connection.getRepository(User)
+
+    const user = await user_repository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.roles", "role")
+      .leftJoinAndSelect("user.thumbnails", "userthumbnail")
+      .select([
+        'user.userId', 'user.email', 'user.createdDate',
+        'user.lastLoginTime', 'user.isActive', 'role.name',
+        'role.code', 'userthumbnail.thumbnailPath', 'user.phoneNumber'
+      ])
+      .getMany()
+    return res.status(OK).json(user)
   }
 
 
@@ -49,7 +83,9 @@ export default class UserController extends BaseController {
       const user = new User()
       user.username = params_set.username
       user.password = util.encodeBase64(sha256(params_set.password))
-      user.roles = await role_repository.findByIds(params_set.roleId)
+      user.roles = await role_repository.find({
+        code: params_set.roleCode
+      })
       user.email = params_set.email
       user.phoneNumber = params_set.phoneNumber
       user.mailConfirmationToken = generateVerificationToken(128)
@@ -64,7 +100,33 @@ export default class UserController extends BaseController {
         "status": "註冊失敗"
       })
     }
+  }
 
+  public assignRole = async (req: Request, res: Response) => {
+    const permission = await this.permissionFilter.isRolePermitted({
+      token: req.headers.authorization,
+      permitRole: ['admin:ccis', 'admin:root']
+    })
+    if (!permission) return res.status(UNAUTHORIZED).json({ "status": "permission denied" })
+
+    const params_set = { ...req.body }
+    const user_repository = this.dbcontext.connection.getRepository(User)
+    const role_repository = this.dbcontext.connection.getRepository(Role)
+    const user = await user_repository.find({
+      where: {
+        userId: params_set.userId
+      }
+    })
+    if (user.length === 0) return res.status(NOT_FOUND).json({ "status": "can't find this user" })
+    const codeArray: string[] = params_set.roleCodeArray.split(',')
+    const codeWrappedInQuotes = codeArray.map((code: string) => `'${code}'`)
+    const withCommasInBetween = codeWrappedInQuotes.join(',')
+    user[0].roles = await role_repository
+      .createQueryBuilder()
+      .where(`code in (${withCommasInBetween})`)
+      .getMany()
+    await user_repository.save(user)
+    return res.status(OK).json({ "status": "success" })
   }
 
   public isEmailUsed = async (req: Request, res: Response) => {
@@ -237,12 +299,12 @@ export default class UserController extends BaseController {
   public addThumbnail = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const userThumbnail_repository = this.dbcontext.connection.getRepository(UserThumbnail)
       const user = await user_repository.findOne({ userId: payload._userId })
       const userThumbnail = new UserThumbnail()
-      userThumbnail.thumbnail = params_set.thumbnailBase64
+      userThumbnail.thumbnailPath = params_set.thumbnailBase64
       userThumbnail.user = user as User
       await userThumbnail_repository.save(userThumbnail)
       return res.status(OK).json({
@@ -257,7 +319,7 @@ export default class UserController extends BaseController {
   public getThumbnail = async (req: Request, res: Response) => {
     const params_set = { ...req.body }
     const { status, payload } = this.jwtAuthenticator.isTokenValid(params_set.token)
-    if (status) {
+    if (status && payload) {
       const user_repository = this.dbcontext.connection.getRepository(User)
       const user = await user_repository.createQueryBuilder("user")
         .where("user.userId = :userId", { userId: payload._userId })

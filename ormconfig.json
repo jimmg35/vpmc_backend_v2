@@ -1,21 +1,23 @@
 {
   "type": "postgres",
-  "host": "140.122.82.98",
-  "port": 5433,
+  "host": "localhost",
+  "port": 5432,
   "username": "postgres",
   "password": "r2tadmiadc",
   "database": "vpmcnode",
   "entities": [
-    "build/entity/authentication/Role.js",
-    "build/entity/authentication/User.js",
-    "build/entity/authentication/UserThumbnail.js",
-    "build/entity/SurveyDataSheet/LandSheet.js",
-    "build/entity/SurveyDataSheet/ParkSheet.js",
-    "build/entity/SurveyDataSheet/BuildingSheet.js",
-    "build/entity/Product.js"
+    "build/src/entity/authentication/Role.js",
+    "build/src/entity/authentication/User.js",
+    "build/src/entity/authentication/App.js",
+    "build/src/entity/authentication/UserLoginLogs.js",
+    "build/src/entity/authentication/UserThumbnail.js",
+    "build/src/entity/SurveyDataSheet/LandSheet.js",
+    "build/src/entity/SurveyDataSheet/ParkSheet.js",
+    "build/src/entity/SurveyDataSheet/BuildingSheet.js",
+    "build/src/entity/Product.js"
   ],
   "migrations": [
-    "build/migration/*.js"
+    "build/src/migration/*.js"
   ],
   "logging": false,
   "synchronize": false,

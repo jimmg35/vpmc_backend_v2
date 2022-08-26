@@ -1,19 +1,25 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
 import { Request, Response } from 'express'
-import { PostgreSQLContext } from "../../dbcontext"
-import { autoInjectable } from "tsyringe"
+import { PostgreSQLContext } from "../../lib/dbcontext"
+import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
-import QueryStringStorer from "../../lib/QueryStringStorer"
+import { QueryStringStorer } from "../../lib/QueryStringStorer"
 import { IGetTownInfo } from "./IApr"
-import { getAge } from "../util"
+import { getAge } from "../../lib/util"
+import { JwtAuthenticator, isRoleHasApp } from "../../lib/JwtAuthenticator"
+import { Role } from "../../entity/authentication/Role"
+import { App } from "../../entity/authentication/App"
+import { PermissionFilter } from "../../lib/PermissionFilter"
 
-const { OK, NOT_FOUND } = StatusCodes
+const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
 @autoInjectable()
 export default class AprController extends BaseController {
 
   public queryStringStorer: QueryStringStorer
   public dbcontext: PostgreSQLContext
+  public jwtAuthenticator: JwtAuthenticator
+  public permissionFilter: PermissionFilter
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     "getTownInfo": "GET",
     "post": "POST",
@@ -21,11 +27,17 @@ export default class AprController extends BaseController {
     "getCommiteeByAprIds": "GET"
   }
 
-  constructor(dbcontext: PostgreSQLContext, queryStringStorer: QueryStringStorer) {
+  constructor(
+    @inject('dbcontext') dbcontext: PostgreSQLContext,
+    @inject('queryStringStorer') queryStringStorer: QueryStringStorer,
+    @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
+    @inject('permissionFilter') permissionFilter: PermissionFilter
+  ) {
     super()
     this.queryStringStorer = queryStringStorer
+    this.jwtAuthenticator = jwtAuthenticator
+    this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
-    this.dbcontext.connect()
   }
 
   /**

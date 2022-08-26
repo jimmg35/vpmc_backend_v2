@@ -1,21 +1,22 @@
 import jwt from 'jsonwebtoken'
+import { container } from 'tsyringe'
+import { Repository } from 'typeorm'
 import { Role } from '../entity/authentication/Role'
-
+import { App } from '../entity/authentication/App'
 
 export interface tokenPayload {
   _userId: string
   username: string
   email: string
   alias: string
-  roles: Role[]
 }
 
-export default class JwtAuthenticator {
+export class JwtAuthenticator {
 
   public expireTime: number
 
   constructor() {
-    this.expireTime = 3600
+    this.expireTime = 7200
   }
 
   /**
@@ -61,15 +62,35 @@ export default class JwtAuthenticator {
    * @param token 
    * @returns 
    */
-  public isTokenValid = (token: string): any => {
+  public isTokenValid = (token: string | undefined): { status: boolean, payload: tokenPayload | undefined } => {
+    let status = false
+    let payload = undefined
+    if (!token) return { status, payload }
     try {
-      const status = true
-      const payload: any = jwt.verify(token, process.env.JWT_SECRET as string)
+      status = true
+      payload = jwt.verify(token, process.env.JWT_SECRET as string) as tokenPayload
       // console.log(payload)
       return { status, payload }
     } catch {
-      return false
+      return { status, payload }
     }
+  }
+
+  /**
+   * 從payload解析出role code陣列，並判斷是否符合條件
+   * @param payload 
+   * @returns 
+   */
+  public filterRole = (payload: any): string[] => {
+    const roleCodeArray: string[] = payload.roles.map((r: any) => r.code)
+    return roleCodeArray
+  }
+
+  public isRoleQualify = (roleCodeArray: string[], roleCodes: string[]): boolean => {
+    for (let i = 0; i < roleCodeArray.length; i++) {
+      if (roleCodes.includes(roleCodeArray[i])) return true
+    }
+    return false
   }
 
   /**
@@ -78,9 +99,77 @@ export default class JwtAuthenticator {
    */
   public decodePayload = (token: string) => {
     let aa = jwt.decode(token)
-    console.log(aa)
+    // console.log(aa)
   }
 
+}
+
+const jwtAuthenticator = container.resolve(JwtAuthenticator)
+
+export default jwtAuthenticator
+
+/** 
+ * 
+ * 判斷token是否有效並且符合要求的權限
+ * 
+ * const permission = isTokenPermitted({
+ *   token: req.headers.authorization,
+ *   jwtAuthenticator: this.jwtAuthenticator,
+ *   permitRole: ['admin:ccis', 'user:ccis']
+ * })
+ * 
+ * @param param0 
+ * @returns 
+ */
+export interface IisTokenPermitted {
+  token: string | undefined
+  jwtAuthenticator: JwtAuthenticator
+  permitRole: string[]
+}
+export const isTokenPermitted = ({
+  token,
+  jwtAuthenticator,
+  permitRole,
+}: IisTokenPermitted) => {
+  const { status, payload } = jwtAuthenticator.isTokenValid(token)
+  if (!status) return false
+  const userRoles = jwtAuthenticator.filterRole(payload)
+  const permission = jwtAuthenticator.isRoleQualify(userRoles, permitRole)
+  return permission
+}
+
+
+/**
+ * 動態判斷給定的roleCode陣列是否擁有該app
+ */
+export interface IisRoleHasApp {
+  token: string | undefined
+  jwtAuthenticator: JwtAuthenticator
+  appCode: string
+  role_repository: Repository<Role>
+  app_repository: Repository<App>
+}
+export const isRoleHasApp = async ({
+  token,
+  jwtAuthenticator,
+  appCode,
+  role_repository,
+  app_repository
+}: IisRoleHasApp) => {
+  const { status, payload } = jwtAuthenticator.isTokenValid(token)
+  if (!status) return false
+  const userRoleCodes = jwtAuthenticator.filterRole(payload)
+  const codeWrappedInQuotes = userRoleCodes.map((code: string) => `'${code}'`)
+  const withCommasInBetween = codeWrappedInQuotes.join(',')
+  const roleApps = await role_repository.createQueryBuilder("role")
+    .where(`role.code in (${withCommasInBetween})`)
+    .leftJoinAndSelect("role.apps", "app").getMany();
+  for (let i = 0; i < roleApps.length; i++) {
+    for (let j = 0; j < roleApps[i].apps.length; j++) {
+      if (roleApps[i].apps[j].code === appCode) return true
+    }
+  }
+  return false
 }
 
 // (() => {
