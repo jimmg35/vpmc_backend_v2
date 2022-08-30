@@ -1,5 +1,5 @@
 import { BaseController, HTTPMETHOD } from "../BaseController"
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { PostgreSQLContext } from "../../lib/dbcontext"
 import { autoInjectable, inject } from "tsyringe"
 import StatusCodes from 'http-status-codes'
@@ -10,6 +10,12 @@ import { LandSheet } from "../../entity/SurveyDataSheet/LandSheet"
 import { ParkSheet } from "../../entity/SurveyDataSheet/ParkSheet"
 import { BuildingSheet } from "../../entity/SurveyDataSheet/BuildingSheet"
 import { PermissionFilter } from "../../lib/PermissionFilter"
+import { ParamsDictionary } from "express-serve-static-core"
+import { ParsedQs } from "qs"
+import { Middleware } from "../BaseController"
+import multer from 'multer'
+
+const upload = multer()
 
 const { OK, UNAUTHORIZED, NOT_FOUND, BAD_REQUEST } = StatusCodes
 
@@ -19,7 +25,7 @@ export default class SurveyController extends BaseController {
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
   public permissionFilter: PermissionFilter
-  public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
+  public routeHttpMethod: { [methodName: string]: HTTPMETHOD } = {
     // "deleteLandSheet": "DELETE",
     // "deleteParkSheet": "DELETE",
     // "deleteBuildingSheet": "DELETE",
@@ -30,6 +36,13 @@ export default class SurveyController extends BaseController {
     "createLandSheet": "POST",
     // "createParkSheet": "POST",
     // "createBuildingSheet": "POST"
+  }
+  public endpointMiddleware: { [methodName: string]: Middleware | Middleware[] } = {
+    "createLandSheet": upload.array('files', 4)
+    //   (req: Request, res: Response, next: NextFunction) => {
+    //   console.log(req.body)
+    //   next()
+    // }
   }
 
   constructor(
@@ -331,8 +344,11 @@ export default class SurveyController extends BaseController {
   // }
 
   public createLandSheet = async (req: Request, res: Response) => {
-    const params_set = extractPostParams(req)
-    console.log(params_set)
+    // const params_set = extractPostParams(req)
+    // const params_set = { ...req.body }
+    console.log(req.body)
+    // console.log(req.file)
+    console.log(req.files)
     const status = await this.permissionFilter.isRoleHasApp({
       appCode: 'function:marketCompare',
       token: req.headers.authorization
@@ -340,38 +356,38 @@ export default class SurveyController extends BaseController {
     const { payload } = this.jwtAuthenticator.isTokenValid(req.headers.authorization)
     if (!status || !payload) return res.status(UNAUTHORIZED).json({ "status": "user permission denied" })
 
-    const user_repository = this.dbcontext.connection.getRepository(User)
-    const landSheet_repository = this.dbcontext.connection.getRepository(LandSheet)
-    const user = await user_repository.findOne({ userId: payload._userId })
-    const landSheet = new LandSheet()
-    landSheet.users = [user as User]
-    landSheet.landCounty = params_set.landCounty
-    landSheet.landTown = params_set.landTown
-    landSheet.landSegmentName = params_set.landSegmentName
-    landSheet.landSegmentCode = params_set.landSegmentCode
-    landSheet.buildCounty = params_set.buildCounty
-    landSheet.buildTown = params_set.buildTown
-    landSheet.buildSegmentName = params_set.buildSegmentName
-    landSheet.buildSegmentCode = params_set.buildSegmentCode
-    landSheet.buildAddressCounty = params_set.buildAddressCounty
-    landSheet.buildAddressTown = params_set.buildAddressTown
-    landSheet.buildAddress = params_set.buildAddress
-    landSheet.landArea = params_set.landArea
-    landSheet.landRightsStatus = params_set.landRightsStatus
-    landSheet.otherRights = params_set.otherRights
-    landSheet.landUse = params_set.landUse
-    landSheet.BuildingCoverageRatio = params_set.BuildingCoverageRatio
-    landSheet.floorAreaRatio = params_set.floorAreaRatio
-    landSheet.inspectionDate = params_set.inspectionDate
-    landSheet.priceDate = params_set.priceDate
-    landSheet.appraisalObject = params_set.appraisalObject
-    landSheet.appraisalDescription = params_set.appraisalDescription
-    landSheet.priceType = params_set.priceType
-    landSheet.evaluationRightsType = params_set.evaluationRightsType
-    landSheet.appraisalCondition = params_set.appraisalCondition
-    landSheet.surveyorName = params_set.surveyorName
-    landSheet.surveyDescription = params_set.surveyDescription
-    await landSheet_repository.save(landSheet)
+    // const user_repository = this.dbcontext.connection.getRepository(User)
+    // const landSheet_repository = this.dbcontext.connection.getRepository(LandSheet)
+    // const user = await user_repository.findOne({ userId: payload._userId })
+    // const landSheet = new LandSheet()
+    // landSheet.users = [user as User]
+    // landSheet.landCounty = params_set.landCounty
+    // landSheet.landTown = params_set.landTown
+    // landSheet.landSegmentName = params_set.landSegmentName
+    // landSheet.landSegmentCode = params_set.landSegmentCode
+    // landSheet.buildCounty = params_set.buildCounty
+    // landSheet.buildTown = params_set.buildTown
+    // landSheet.buildSegmentName = params_set.buildSegmentName
+    // landSheet.buildSegmentCode = params_set.buildSegmentCode
+    // landSheet.buildAddressCounty = params_set.buildAddressCounty
+    // landSheet.buildAddressTown = params_set.buildAddressTown
+    // landSheet.buildAddress = params_set.buildAddress
+    // landSheet.landArea = params_set.landArea
+    // landSheet.landRightsStatus = params_set.landRightsStatus
+    // landSheet.otherRights = params_set.otherRights
+    // landSheet.landUse = params_set.landUse
+    // landSheet.BuildingCoverageRatio = params_set.BuildingCoverageRatio
+    // landSheet.floorAreaRatio = params_set.floorAreaRatio
+    // landSheet.inspectionDate = params_set.inspectionDate
+    // landSheet.priceDate = params_set.priceDate
+    // landSheet.appraisalObject = params_set.appraisalObject
+    // landSheet.appraisalDescription = params_set.appraisalDescription
+    // landSheet.priceType = params_set.priceType
+    // landSheet.evaluationRightsType = params_set.evaluationRightsType
+    // landSheet.appraisalCondition = params_set.appraisalCondition
+    // landSheet.surveyorName = params_set.surveyorName
+    // landSheet.surveyDescription = params_set.surveyDescription
+    // await landSheet_repository.save(landSheet)
 
     return res.status(OK).json({
       "status": "現勘表新增成功"
