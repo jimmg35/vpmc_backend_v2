@@ -8,6 +8,10 @@ import { IController } from './controllers/BaseController'
 import { autoInjectSubRoutes } from './controllers/BaseController'
 import swaggerUi from 'swagger-ui-express'
 import swaggerSpec from './swagger'
+import multer from 'multer'
+
+const upload = multer()
+
 
 interface IServerParam {
   controllers: Array<IController>
@@ -37,6 +41,7 @@ export class Server {
    */
   private addMiddlewares = (): void => {
     this.app.set('trust proxy', true)
+
     this.app.use(express.urlencoded({
       extended: true,
       limit: '50mb'
@@ -44,6 +49,9 @@ export class Server {
     this.app.use(express.json({
       limit: '50mb'
     }))
+    // this.app.use(upload.single('surveyTranscriptFile'))
+    // this.app.use(upload.array('surveyImage', 4))
+
     this.app.use(cors())
     // 註冊swagger
     this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
@@ -69,7 +77,10 @@ export class Server {
     // 註冊controller與其方法至router上
     controllers.forEach((controller: IController, index: number) => {
       autoInjectSubRoutes(controller)
-      this.routerBundler.use(controller.routerName, controller.getRouter())
+      this.routerBundler.use(
+        controller.routerName,
+        controller.getRouter()
+      )
     })
   }
 
