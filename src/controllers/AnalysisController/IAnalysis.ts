@@ -1,5 +1,8 @@
 
+export type AssetType = 'land' | 'building' | 'park'
+
 export interface IMarketCompare {
+  assetType: AssetType
   buildingType: number
   longitude?: number
   latitude?: number
