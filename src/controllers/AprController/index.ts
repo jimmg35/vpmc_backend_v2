@@ -24,7 +24,8 @@ export default class AprController extends BaseController {
     "getTownInfo": "GET",
     "post": "POST",
     "getCommiteeByAprId": "GET",
-    "getCommiteeByAprIds": "GET"
+    "getCommiteeByAprIds": "GET",
+    "getAssetDetailByAprId": "GET"
   }
 
   constructor(
@@ -106,6 +107,12 @@ export default class AprController extends BaseController {
     return res.status(OK).json(output)
   }
 
+  public getAssetDetailByAprId = async (req: Request, res: Response) => {
+    const params_set = { ...req.query } as { id: string }
+    const repo = this.dbcontext.connection.getRepository
+
+    return res.status(OK).json()
+  }
 
   /**
    * @swagger
