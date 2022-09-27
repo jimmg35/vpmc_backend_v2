@@ -9,6 +9,12 @@ import { BuildingSheet } from "../entity/SurveyDataSheet/BuildingSheet"
 import { ParkSheet } from "../entity/SurveyDataSheet/ParkSheet"
 import { App } from "../entity/authentication/App"
 import { UserLoginLogs } from "../entity/authentication/UserLoginLogs"
+import { Apr } from "../entity/apr/Apr"
+import { AprLand } from "../entity/apr/AprLand"
+import { AprBuild } from "../entity/apr/AprBuild"
+import { AprPark } from "../entity/apr/AprPark"
+import { Commitee } from "../entity/apr/Commitee"
+import { License } from "../entity/apr/License"
 
 export interface IDbConfig {
   type: string
@@ -62,7 +68,8 @@ export class PostgreSQLContext extends DbContext {
         "database": this.dbConfig.database,
         "entities": [
           Role, User, UserThumbnail, LandSheet,
-          BuildingSheet, ParkSheet, App, UserLoginLogs
+          BuildingSheet, ParkSheet, App, UserLoginLogs,
+          Apr, AprLand, AprBuild, AprPark, Commitee, License
         ],
         "migrations": [
           "./migration/*.js"
