@@ -201,6 +201,7 @@ export class QueryStringStorer {
           ap."belconyArea",
           ap."landTransferArea",
           ap."parkingSpaceType",
+          ap."address",
           ST_X(ap.coordinate::geometry) as longitude,
           ST_Y(ap.coordinate::geometry) as latitude 
         FROM 
@@ -233,6 +234,7 @@ export class QueryStringStorer {
           ap."belconyArea",
           ap."landTransferArea",
           ap."parkingSpaceType",
+          ap."address",
           ST_X(ap.coordinate::geometry) as longitude,
           ST_Y(ap.coordinate::geometry) as latitude 
         FROM 
