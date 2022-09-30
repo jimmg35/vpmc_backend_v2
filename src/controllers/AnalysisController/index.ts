@@ -288,7 +288,7 @@ export default class AnalysisController extends BaseController {
     const props = { ...req.query } as unknown as IMarketCompare
     const queryString = buileMarketCompareQuery(props, this.queryStringStorer)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
-    console.log(queryString)
+    // console.log(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {
       outputResults = []
