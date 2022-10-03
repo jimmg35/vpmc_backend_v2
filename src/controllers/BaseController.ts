@@ -1,17 +1,26 @@
-import { Router } from 'express'
+import { Response, Router, Request, NextFunction } from 'express'
 
 export type HTTPMETHOD = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "COPY" | "OPTIONS"
 
+export type Middleware = (req: Request, res: Response, next: NextFunction) => void
+
 export interface IBaseControllerParam {
   routeHttpMethod: { [methodName: string]: HTTPMETHOD }
+  endpointMiddleware?: { [methodName: string]: Middleware }
 }
 
 export interface IController {
   routerName: string
   routeHttpMethod: { [methodName: string]: HTTPMETHOD }
+  endpointMiddleware?: { [methodName: string]: Middleware | Middleware[] }
   getRouter (): Router
   setRouterName_HiddenMethod (): void
-  bindRouter_HiddenMethod (routeName: string, routeHandler: any, httpMethod: HTTPMETHOD): void
+  bindRouter_HiddenMethod (
+    routeName: string,
+    routeHandler: any,
+    httpMethod: HTTPMETHOD,
+    middleware: Middleware
+  ): void
   // injectDbContexts(dbcontexts: Array<DbContext>): void
 }
 
@@ -19,15 +28,18 @@ export class BaseController implements IController {
   protected _router: Router
   public routerName: string
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD }
+  public endpointMiddleware: { [methodName: string]: Middleware | Middleware[] } | undefined
 
   constructor(options: IBaseControllerParam =
     {
-      routeHttpMethod: {}
+      routeHttpMethod: {},
+      endpointMiddleware: {}
     }
   ) {
     this._router = Router()
     this.setRouterName_HiddenMethod()
     this.routeHttpMethod = options.routeHttpMethod
+    this.endpointMiddleware = options.endpointMiddleware
   }
 
   public setRouterName_HiddenMethod = (): void => {
@@ -35,29 +47,36 @@ export class BaseController implements IController {
     this.routerName += this.constructor.name.replace(/Controller/g, "")
   }
 
-  public bindRouter_HiddenMethod = (routeName: string, routeHandler: any, httpMethod: HTTPMETHOD): void => {
-    // this._router.get("/index", this.index)
+  public bindRouter_HiddenMethod = (
+    routeName: string,
+    routeHandler: any,
+    httpMethod: HTTPMETHOD,
+    middleware?: Middleware
+  ): void => {
+    const undefinedMiddleware: Middleware = (req: Request, res: Response, next: NextFunction) => {
+      next()
+    }
     switch (httpMethod) {
       case "GET":
-        this._router.get('/' + routeName, routeHandler)
+        this._router.get('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
       case "POST":
-        this._router.post('/' + routeName, routeHandler)
+        this._router.post('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
       case "PUT":
-        this._router.put('/' + routeName, routeHandler)
+        this._router.put('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
       case "PATCH":
-        this._router.patch('/' + routeName, routeHandler)
+        this._router.patch('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
       case "DELETE":
-        this._router.delete('/' + routeName, routeHandler)
+        this._router.delete('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
       case "COPY":
-        this._router.copy('/' + routeName, routeHandler)
+        this._router.copy('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
       case "OPTIONS":
-        this._router.options('/' + routeName, routeHandler)
+        this._router.options('/' + routeName, middleware ? middleware : undefinedMiddleware, routeHandler)
         break;
     }
   }
@@ -96,8 +115,15 @@ export const autoInjectSubRoutes = (controller: IController) => {
     return output
   }
   excludeBaseMethods(listMethods(controller)).forEach((method) => {
-    //@ts-ignore
-    controller.bindRouter_HiddenMethod(method, controller[method], controller.routeHttpMethod[method])
+
+    if (controller.endpointMiddleware) {
+      //@ts-ignore
+      controller.bindRouter_HiddenMethod(method, controller[method], controller.routeHttpMethod[method], controller.endpointMiddleware[method])
+    } else {
+      //@ts-ignore
+      controller.bindRouter_HiddenMethod(method, controller[method], controller.routeHttpMethod[method])
+    }
+
   })
 }
 

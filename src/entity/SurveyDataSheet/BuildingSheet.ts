@@ -16,37 +16,34 @@ export class BuildingSheet {
     users: User[]
 
     @Column()
-    assetType: string
+    landCounty: string
 
     @Column()
-    landMarkCounty: string
+    landTown: string
 
     @Column()
-    landMarkVillage: string
+    landSegmentName: string
 
     @Column()
-    landMarkName: string
+    landSegmentCode: string
 
     @Column()
-    landMarkCode: string
+    buildCounty: string
 
     @Column()
-    buildMarkCounty: string
+    buildTown: string
 
     @Column()
-    buildMarkVillage: string
+    buildSegmentName: string
 
     @Column()
-    buildMarkName: string
-
-    @Column()
-    buildMarkCode: string
+    buildSegmentCode: string
 
     @Column()
     buildAddressCounty: string
 
     @Column()
-    buildAddressVillage: string
+    buildAddressTown: string
 
     @Column()
     buildAddress: string
@@ -57,29 +54,29 @@ export class BuildingSheet {
     @Column("double precision")
     buildingArea: number
 
-    @Column()
-    landRightsOwner: string
+    // @Column()
+    // landRightsOwner: string
 
     @Column()
-    landRightsStatus: string
+    landRightsStatus: number
+
+    // @Column()
+    // landRightsHolding: string
+
+    // @Column()
+    // buildingRightsOwner: string
 
     @Column()
-    landRightsHolding: string
+    buildingRightsStatus: number
 
-    @Column()
-    buildingRightsOwner: string
+    // @Column()
+    // buildingRightsHolding: string
 
-    @Column()
-    buildingRightsStatus: string
-
-    @Column()
-    buildingRightsHolding: string
-
-    @Column()
+    @Column('text')
     otherRights: string
 
     @Column()
-    landUses: string
+    landUse: number
 
     @Column("double precision")
     BuildingCoverageRatio: number
@@ -97,10 +94,10 @@ export class BuildingSheet {
     buildingFinishDate: Date
 
     @Column()
-    buildingUpFloor: number
+    buildingFloor: number
 
     @Column()
-    buildingDownFloor: number
+    buildingBase: number
 
     @Column()
     surveyFloor: number
@@ -109,44 +106,44 @@ export class BuildingSheet {
     inspectionDate: Date
 
     @Column()
-    valueOpinionDate: Date
+    priceDate: Date
 
     @Column()
-    appraisalObject: string
+    appraisalObject: number
 
-    @Column()
+    @Column('text')
     appraisalDescription: string
 
     @Column()
-    priceType: string
+    priceType: number
 
     @Column()
-    evaluationRightsType: string
+    evaluationRightsType: number
 
-    @Column()
+    @Column('text')
     appraisalCondition: string
 
     @Column()
     surveyorName: string
 
-    @Column()
+    @Column('text')
     surveyDescription: string
 
-    @Column()
-    transcriptFileBase64: string
+    // @Column()
+    // transcriptFileBase64: string
 
-    @Column({
-        nullable: true
-    })
-    transcriptFileName: string
+    // @Column({
+    //     nullable: true
+    // })
+    // transcriptFileName: string
 
-    @Column("text", { array: true })
-    photoFilesBase64: string[]
+    // @Column("text", { array: true })
+    // photoFilesBase64: string[]
 
-    @Column("text", {
-        array: true,
-        nullable: true
-    })
-    photoFilesName: string[]
+    // @Column("text", {
+    //     array: true,
+    //     nullable: true
+    // })
+    // photoFilesName: string[]
 
 }

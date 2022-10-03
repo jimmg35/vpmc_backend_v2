@@ -10,6 +10,9 @@ import { JwtAuthenticator, isRoleHasApp } from "../../lib/JwtAuthenticator"
 import { Role } from "../../entity/authentication/Role"
 import { App } from "../../entity/authentication/App"
 import { PermissionFilter } from "../../lib/PermissionFilter"
+import { AprLand } from "../../entity/apr/AprLand"
+import { AprBuild } from "../../entity/apr/AprBuild"
+import { AprPark } from "../../entity/apr/AprPark"
 
 const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
@@ -24,7 +27,8 @@ export default class AprController extends BaseController {
     "getTownInfo": "GET",
     "post": "POST",
     "getCommiteeByAprId": "GET",
-    "getCommiteeByAprIds": "GET"
+    "getCommiteeByAprIds": "GET",
+    "getAssetDetailByAprId": "GET"
   }
 
   constructor(
@@ -106,6 +110,33 @@ export default class AprController extends BaseController {
     return res.status(OK).json(output)
   }
 
+  public getAssetDetailByAprId = async (req: Request, res: Response) => {
+    const params_set = { ...req.query } as { id: string }
+    const repoLand = this.dbcontext.connection.getRepository(AprLand)
+    const repoBuild = this.dbcontext.connection.getRepository(AprBuild)
+    const repoPark = this.dbcontext.connection.getRepository(AprPark)
+    const lands = await repoLand.find({
+      where: {
+        aprId: params_set.id
+      }
+    })
+    const builds = await repoBuild.find({
+      where: {
+        aprId: params_set.id
+      }
+    })
+    const parks = await repoPark.find({
+      where: {
+        aprId: params_set.id
+      }
+    })
+    const output = {
+      lands: lands,
+      builds: builds,
+      parks: parks
+    }
+    return res.status(OK).json(output)
+  }
 
   /**
    * @swagger

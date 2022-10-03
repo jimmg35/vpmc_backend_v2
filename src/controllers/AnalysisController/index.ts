@@ -53,16 +53,17 @@ const buileMarketCompareQuery = (props: IMarketCompare, queryStringStorer: Query
   }
 
   let assetTypeFilter = ''
-  if ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))) {
+  // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(Number(props.buildingType))
+  if (props.assetType === 'building') {
     assetTypeFilter = `
       AND ap."buildingType" = ${props.buildingType} 
       AND ap."buildingAmount" > 0 
     `
-  } else if (Number(props.buildingType) === 100) {
+  } else if (props.assetType === 'land') {
     assetTypeFilter = `
       AND ap."landAmount" > 0 
     `
-  } else if (Number(props.buildingType) === 200) {
+  } else if (props.assetType === 'park') {
     assetTypeFilter = `
       AND ap."parkAmount" > 0 
     `
@@ -287,6 +288,7 @@ export default class AnalysisController extends BaseController {
     const props = { ...req.query } as unknown as IMarketCompare
     const queryString = buileMarketCompareQuery(props, this.queryStringStorer)
     let results: IResult[] = await this.dbcontext.connection.query(queryString)
+    // console.log(queryString)
     let outputResults: IResult[] | undefined = undefined
     if (props.ageStart && props.ageEnd) {
       outputResults = []

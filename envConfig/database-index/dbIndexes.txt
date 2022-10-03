@@ -5,6 +5,9 @@ CREATE INDEX apr_index_attribute ON apr ("transactionTime", "unitPrice", price);
 CREATE INDEX apr_index_spatial ON apr USING GIST(coordinate);
 CREATE INDEX commitee_index_attribute ON commitee (date);
 CREATE INDEX commitee_index_spatial ON commitee USING GIST (coordinate);
+CREATE INDEX aprland_index_attribute ON aprland ("aprId");
+CREATE INDEX aprbuild_index_attribute ON aprbuild ("aprId");
+CREATE INDEX aprpark_index_attribute ON aprpark ("aprId");
 
 DROP INDEX IF EXISTS license_index;
 DROP INDEX IF EXISTS taiwan_map_index_attribute;
@@ -13,3 +16,6 @@ DROP INDEX IF EXISTS apr_index_attribute;
 DROP INDEX IF EXISTS apr_index_spatial;
 DROP INDEX IF EXISTS commitee_index_attribute;
 DROP INDEX IF EXISTS commitee_index_spatial;
+DROP INDEX IF EXISTS aprland_index_attribute;
+DROP INDEX IF EXISTS aprbuild_index_attribute;
+DROP INDEX IF EXISTS aprpark_index_attribute;
