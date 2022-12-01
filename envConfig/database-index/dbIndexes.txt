@@ -19,3 +19,6 @@ DROP INDEX IF EXISTS commitee_index_spatial;
 DROP INDEX IF EXISTS aprland_index_attribute;
 DROP INDEX IF EXISTS aprbuild_index_attribute;
 DROP INDEX IF EXISTS aprpark_index_attribute;
+
+RPRSMLMKKIHFFHF38CA
+set NODE_OPTIONS=--max_old_space_size=4096

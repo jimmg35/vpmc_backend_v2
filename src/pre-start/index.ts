@@ -15,7 +15,7 @@ import commandLineArgs from 'command-line-args'
   ])
 
   const envConfig = dotenv.config({
-    path: path.join(__dirname, `../../envConfig/service-config/production.env`),
+    path: path.join(__dirname, `../../envConfig/service-config/${options.env}.env`),
   })
 
   if (envConfig.error) {
