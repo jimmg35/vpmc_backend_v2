@@ -65,7 +65,7 @@ export default class UserController extends BaseController {
       .leftJoinAndSelect("user.roles", "role")
       .leftJoinAndSelect("user.thumbnails", "userthumbnail")
       .select([
-        'user.userId', 'user.email', 'user.createdDate',
+        'user.userId', 'user.email', 'user.alias', 'user.createdDate',
         'user.lastLoginTime', 'user.isActive', 'role.name',
         'role.code', 'userthumbnail.thumbnailPath', 'user.phoneNumber'
       ])
