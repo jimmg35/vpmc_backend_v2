@@ -7,6 +7,7 @@ import { App } from '../../entity/authentication/App'
 import { isTokenPermitted } from '../../lib/JwtAuthenticator'
 import { JwtAuthenticator } from '../../lib/JwtAuthenticator'
 import { PermissionFilter } from '../../lib/PermissionFilter'
+import { ICostQuickParam } from './types'
 
 const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
@@ -33,7 +34,10 @@ export default class CostController extends BaseController {
   }
 
   public quick = async (req: Request, res: Response) => {
-    const params_set = { ...req.body }
+    const params: ICostQuickParam = { ...req.body }
+    // 縣市 -> 用途 -> 樓上層 -> 單價
+
+
     return res.status(OK).json({ 'status': 'success' })
   }
 
