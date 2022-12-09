@@ -45,7 +45,7 @@ export default class CostController extends BaseController {
   public quick = async (req: Request, res: Response) => {
     const params: ICostQuickParam = { ...req.body }
 
-    // 常數
+    // 變數
     const constCostAdjRatio = 0.10489 // 營造物價指數調整率
 
 

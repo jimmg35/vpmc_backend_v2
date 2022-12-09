@@ -3,6 +3,13 @@ import { square, UnitPriceLevel, isFactory, IMinMax } from "../types"
 
 export class CostConditioner {
 
+  // 常數
+  // 設計費用占實際營造施工費用之比例
+  private _designRatioInterval: number[] = [0.02, 0.03]
+  private _adRatioInterval: number[] = [0.03, 0.07]
+  private _manageRationInterval: number[] = [0.03, 0.07]
+
+
   private calculateUnitPriceLevel = (buildingArea: number, price: number): UnitPriceLevel | undefined => {
     const pyeong = buildingArea / square
     const unitPriceInPyeong = price / pyeong
