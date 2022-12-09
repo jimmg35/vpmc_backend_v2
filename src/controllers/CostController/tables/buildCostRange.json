@@ -1493,6 +1493,48 @@
             }
         },
         "steel": {
+            "resident": {
+                "1": {
+                    "min": null,
+                    "max": null
+                },
+                "2": {
+                    "min": null,
+                    "max": null
+                },
+                "3": {
+                    "min": null,
+                    "max": null
+                },
+                "4": {
+                    "min": null,
+                    "max": null
+                },
+                "5": {
+                    "min": null,
+                    "max": null
+                },
+                "6": {
+                    "min": null,
+                    "max": null
+                },
+                "7": {
+                    "min": null,
+                    "max": null
+                },
+                "8": {
+                    "min": null,
+                    "max": null
+                },
+                "9": {
+                    "min": null,
+                    "max": null
+                },
+                "10": {
+                    "min": null,
+                    "max": null
+                }
+            },
             "factory": {
                 "1": {
                     "min": 35300,
@@ -1536,9 +1578,5 @@
                 }
             }
         }
-    },
-    "65000": {
-        "0": {},
-        "10": {}
     }
 }

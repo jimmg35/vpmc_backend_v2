@@ -1,12 +1,12 @@
-import { buildingType } from "../../../types"
+import { Material, BuildingPurpose } from "../../../types"
 
 export interface ICostQuickParam {
   countyCode: string
   buildingArea: number
-  buildingType: buildingType
-  material: string
+  buildingPurpose: BuildingPurpose
+  material: Material
   completionTime: string
-  groundFloor: number
-  underGroundFloor: number
+  groundFloor: string
+  underGroundFloor: string
   price: number
 }

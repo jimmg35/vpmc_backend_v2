@@ -13,3 +13,27 @@ export enum buildingType {
   factory = 10,         // 工廠
   farmhouse = 11        // 農舍
 }
+
+export const square = 3.305785
+
+export type BuildingPurpose = 'resident' | 'factory'
+export type Material = 'concrete' | 'brick' | 'steel'
+export type UnitPriceLevel = '50below' | '50-75' | '75-100' | '100-125' |
+  '125-150' | '150-180' | '180-210' | '210up'
+
+export interface IMinMax {
+  min: number | null
+  max: number | null
+}
+
+export interface IBuildCostRange {
+  [key: string]: {
+    [key in Material]: {
+      [key in BuildingPurpose]: {
+        [key: string]: {
+          [key in UnitPriceLevel]: IMinMax
+        } | IMinMax
+      }
+    }
+  }
+}

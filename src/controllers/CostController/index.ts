@@ -8,6 +8,11 @@ import { isTokenPermitted } from '../../lib/JwtAuthenticator'
 import { JwtAuthenticator } from '../../lib/JwtAuthenticator'
 import { PermissionFilter } from '../../lib/PermissionFilter'
 import { ICostQuickParam } from './types'
+import buildCostRangeJson from './tables/buildCostRange.json'
+import { IBuildCostRange } from '../../types'
+import { CostConditioner } from '../../lib/CostConditioner'
+
+const buildCostRange: IBuildCostRange = buildCostRangeJson
 
 const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
 
@@ -18,6 +23,7 @@ export default class CostController extends BaseController {
   public dbcontext: PostgreSQLContext
   public jwtAuthenticator: JwtAuthenticator
   public permissionFilter: PermissionFilter
+  public costConditioner: CostConditioner
   public routeHttpMethod: { [methodName: string]: HTTPMETHOD; } = {
     'quick': 'POST'
   }
@@ -25,17 +31,29 @@ export default class CostController extends BaseController {
   constructor(
     @inject('dbcontext') dbcontext: PostgreSQLContext,
     @inject('jwtAuthenticator') jwtAuthenticator: JwtAuthenticator,
-    @inject('permissionFilter') permissionFilter: PermissionFilter
+    @inject('permissionFilter') permissionFilter: PermissionFilter,
+    @inject('costConditioner') costConditioner: CostConditioner
+
   ) {
     super()
     this.jwtAuthenticator = jwtAuthenticator
     this.permissionFilter = permissionFilter
     this.dbcontext = dbcontext
+    this.costConditioner = costConditioner
   }
 
   public quick = async (req: Request, res: Response) => {
     const params: ICostQuickParam = { ...req.body }
-    // 縣市 -> 用途 -> 樓上層 -> 單價
+
+    const costRange = buildCostRange[params.countyCode][params.material][params.buildingPurpose][params.groundFloor]
+    if (params.buildingPurpose === 'factory') {
+
+    } else if (params.buildingPurpose === 'resident') {
+
+    }
+    console.log(costRange)
+
+
 
 
     return res.status(OK).json({ 'status': 'success' })
