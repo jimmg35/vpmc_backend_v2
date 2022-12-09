@@ -9,12 +9,12 @@ import { JwtAuthenticator } from '../../lib/JwtAuthenticator'
 import { PermissionFilter } from '../../lib/PermissionFilter'
 import { ICostQuickParam } from './types'
 import buildCostRangeJson from './tables/buildCostRange.json'
-import { IBuildCostRange } from '../../types'
+import { IBuildCostRange, IMinMax, isFactory } from '../../types'
 import { CostConditioner } from '../../lib/CostConditioner'
 
 const buildCostRange: IBuildCostRange = buildCostRangeJson
 
-const { OK, NOT_FOUND, UNAUTHORIZED } = StatusCodes
+const { OK, NOT_FOUND, UNAUTHORIZED, BAD_REQUEST } = StatusCodes
 
 @autoInjectable()
 export default class CostController extends BaseController {
@@ -45,13 +45,16 @@ export default class CostController extends BaseController {
   public quick = async (req: Request, res: Response) => {
     const params: ICostQuickParam = { ...req.body }
 
-    const costRange = buildCostRange[params.countyCode][params.material][params.buildingPurpose][params.groundFloor]
-    if (params.buildingPurpose === 'factory') {
+    // 常數
+    const constCostAdjRatio = 0.10489 // 營造物價指數調整率
 
-    } else if (params.buildingPurpose === 'resident') {
 
-    }
-    console.log(costRange)
+    // 取得營造施工費區間
+    const costRangeTable = buildCostRange[params.countyCode][params.material][params.buildingPurpose][params.groundFloor]
+    const constBudgetInterval = this.costConditioner.getConstructionBudgetInterval(
+      costRangeTable, params.buildingArea, params.price
+    )
+    if (!constBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得營造施工費區間' })
 
 
 

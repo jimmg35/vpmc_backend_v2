@@ -25,6 +25,9 @@ export interface IMinMax {
   min: number | null
   max: number | null
 }
+export function isFactory (object: any): object is IMinMax {
+  return 'min' in object;
+}
 
 export interface IBuildCostRange {
   [key: string]: {
