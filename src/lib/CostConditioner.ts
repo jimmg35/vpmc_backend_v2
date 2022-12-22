@@ -6,7 +6,7 @@ import {
 } from "../types"
 import buildCostRangeJson from '../controllers/CostController/tables/buildCostRange.json'
 import eprRangeJson from '../controllers/CostController/tables/eprRange.json'
-
+import bankLoanTable from '../controllers/CostController/tables/bankLoanTable.json'
 
 
 export class CostConditioner {
@@ -29,7 +29,6 @@ export class CostConditioner {
   private readonly _taxRatioInterval: IInterval = {
     min: 0.005, max: 0.012
   }
-
   // 建築期間 - 常數 - 地上樓層數建築時間
   private readonly _groundFloorConstTime: number = 1
   // 建築期間 - 常數 - 地下樓層數建築時間
@@ -40,6 +39,14 @@ export class CostConditioner {
   private readonly _constMonth: number = 12
   // 建築期間 - 常數 - 年限門檻
   private readonly _constPeriodThreshold: number = 1
+  // 資本利息綜合利率 - 常數 - 常數1
+  private readonly _ICRConstant1: number = 0.5
+  // 資本利息綜合利率 - 常數 - 常數2
+  private readonly _ICRConstant2: number = 2
+  // 資本利息綜合利率 - 常數 - 自有資金比例
+  private readonly _ICROwnRatio: number = 0.4
+  // 資本利息綜合利率 - 常數 - 融資借貸比例
+  private readonly _ICRLoanRation: number = 0.6
 
 
   // 計算單價等級 - 用於計算營造施工費區間
@@ -84,7 +91,55 @@ export class CostConditioner {
     }
   }
 
-  // 計算營造施工費 - 區間
+  // 計算建築期間(年)
+  // (地上樓層數, 地下樓層數) => 建築期間(年)
+  public getConstructionPeriod = (groundFloor: number, underGroundFloor: number) => {
+    const constructionPeriod = (
+      (groundFloor * this._groundFloorConstTime) +
+      (underGroundFloor * this._underGroundFloorConstTime) +
+      this._consConstant
+    ) / this._constMonth;
+    if (constructionPeriod < this._constPeriodThreshold) return this._constPeriodThreshold
+    return constructionPeriod
+  }
+
+  // 計算投資利潤率
+  // (建築期間(年), 縣市代碼) => 投資利潤率
+  // ※有參照外部資料
+  public getEPRInterval = (
+    constructionPeriod: number,
+    countyCode: string
+  ): IInterval => {
+    const eprRange: IEPRRange = eprRangeJson
+    const constPeriodLevel = this.calculateConstPeriodLevel(constructionPeriod)
+    return {
+      min: eprRange[countyCode][constPeriodLevel].min,
+      max: eprRange[countyCode][constPeriodLevel].max
+    }
+  }
+
+  // 計算營造物價指數調整率
+  // (建物交易屋齡) => 營造物價指數調整率
+  // ※有參照外部資料
+  // ※尚未實作
+  public getConstAdjRatio = (transactionAge: number) => {
+    return 1.0489
+  }
+
+  // 計算資本利息綜合利率
+  // (建築期間(年)) => 資本利息綜合利率
+  // ※有參照外部資料
+  public getICRRatio = (
+    constructionPeriod: number
+  ) => {
+    const ICRRatio = (constructionPeriod - this._ICRConstant1) * (
+      this._ICROwnRatio * bankLoanTable.ownRatio +
+      this._ICRLoanRation * bankLoanTable.loanRatio
+    ) / this._ICRConstant2
+    return ICRRatio
+  }
+
+  // 計算營造施工費(元) - 區間
   // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價) => 營造施工費區間
   // ※有參照外部資料
   public getConstructionBudgetInterval = (
@@ -112,38 +167,6 @@ export class CostConditioner {
     }
   }
 
-  // 計算建築期間(年)
-  // (地上樓層數, 地下樓層數) => 建築期間(年)
-  public getConstructionPeriod = (groundFloor: number, underGroundFloor: number) => {
-    const constructionPeriod = (
-      (groundFloor * this._groundFloorConstTime) +
-      (underGroundFloor * this._underGroundFloorConstTime) +
-      this._consConstant
-    ) / this._constMonth;
-    if (constructionPeriod < this._constPeriodThreshold) return this._constPeriodThreshold
-    return constructionPeriod
-  }
-
-  // 計算投資利潤率
-  // (建築期間(年), 縣市代碼) => 投資利潤率
-  // ※有參照外部資料
-  public getEPRInterval = (constructionPeriod: number, countyCode: string) => {
-    const eprRange: IEPRRange = eprRangeJson
-    const constPeriodLevel = this.calculateConstPeriodLevel(constructionPeriod)
-    return [
-      eprRange[countyCode][constPeriodLevel].min,
-      eprRange[countyCode][constPeriodLevel].max
-    ]
-  }
-
-  // 計算營造物價指數調整率
-  // (建物交易屋齡) => 營造物價指數調整率
-  // ※有參照外部資料
-  // ※尚未實作
-  public getConstAdjRatio = (transactionAge: number) => {
-    return 1.0489
-  }
-
   // 計算規劃設計費用(元) - 區間
   // (營造施工費區間, 營造物價指數調整率) => 規劃設計費用區間
   public getDesignBudgetInterval = (
@@ -153,6 +176,16 @@ export class CostConditioner {
     const min = constBudgetInterval.min * constAdjRatio * this._designRatioInterval.min
     const max = constBudgetInterval.max * constAdjRatio * this._designRatioInterval.max
     return { min: min, max: max }
+  }
+
+  // 計算廣告銷售費用(元) - 區間
+  // (取得營造施工費區間, 規劃設計費用區間, 投資利潤率區間, 資本利息綜合利率) => 廣告銷售費用區間
+  public getAdBudgetInterval = (
+    constBudgetInterval: IInterval,
+    designBudgetInterval: IInterval,
+    EPRInterval: IInterval,
+  ) => {
+
   }
 
 }

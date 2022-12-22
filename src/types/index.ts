@@ -44,6 +44,6 @@ export interface IBuildCostRange {
 
 export interface IEPRRange {
   [key: string]: {
-    [key: string]: IMinMax
+    [key: string]: IInterval
   }
 }

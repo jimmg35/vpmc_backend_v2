@@ -46,17 +46,6 @@ export default class CostController extends BaseController {
     const params: ICostQuickParam = { ...req.body }
 
 
-    // 取得營造施工費區間 - constBudgetInterval
-    const constBudgetInterval = this.costConditioner.getConstructionBudgetInterval(
-      params.countyCode,
-      params.material,
-      params.buildingPurpose,
-      params.groundFloor,
-      params.buildingArea,
-      params.price
-    )
-    if (!constBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得營造施工費區間' })
-
     // 取得建築期間(年) - constructionTime
     const constructionPeriod = this.costConditioner.getConstructionPeriod(
       Number(params.groundFloor), Number(params.underGroundFloor)
@@ -72,10 +61,36 @@ export default class CostController extends BaseController {
       9999
     )
 
+    // 取得資本利息綜合利率 - ICRRatio
+    const ICRRatio = this.costConditioner.getICRRatio(
+      constructionPeriod
+    )
+
+
+    // 取得營造施工費區間 - constBudgetInterval
+    const constBudgetInterval = this.costConditioner.getConstructionBudgetInterval(
+      params.countyCode,
+      params.material,
+      params.buildingPurpose,
+      params.groundFloor,
+      params.buildingArea,
+      params.price
+    )
+    if (!constBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得營造施工費區間' })
+
     // 取得規劃設計費用區間 - designBudgetInterval
     const designBudgetInterval = this.costConditioner.getDesignBudgetInterval(
       constBudgetInterval, constAdjRatio
     )
+
+    // 取得廣告銷售費用區間 - adBudgetInterval
+    const adBudgetInterval = this.costConditioner.getAdBudgetInterval(
+      constBudgetInterval, designBudgetInterval, EPRInterval
+    )
+
+
+
+
 
 
 
