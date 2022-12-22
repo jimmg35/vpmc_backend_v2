@@ -1,8 +1,12 @@
 import { container } from "tsyringe"
 import {
-  square, UnitPriceLevel, isFactory, IMinMax, IBuildCostRange, Material, BuildingPurpose
+  square, UnitPriceLevel, isFactory,
+  IMinMax, IBuildCostRange, Material,
+  BuildingPurpose, IEPRRange, IInterval
 } from "../types"
 import buildCostRangeJson from '../controllers/CostController/tables/buildCostRange.json'
+import eprRangeJson from '../controllers/CostController/tables/eprRange.json'
+
 
 
 export class CostConditioner {
@@ -10,13 +14,21 @@ export class CostConditioner {
   // **** 常數 ****
   //
   // 設計費用占實際營造施工費用之比例
-  private readonly _designRatioInterval: number[] = [0.02, 0.03]
+  private readonly _designRatioInterval: IInterval = {
+    min: 0.02, max: 0.03
+  }
   // 廣告銷售費用占總成本之比例
-  private readonly _adRatioInterval: number[] = [0.03, 0.07]
+  private readonly _adRatioInterval: IInterval = {
+    min: 0.03, max: 0.07
+  }
   // 管理費用占總成本之比例
-  private readonly _manageRatioInterval: number[] = [0.005, 0.05]
+  private readonly _manageRatioInterval: IInterval = {
+    min: 0.005, max: 0.05
+  }
   // 稅捐費用占總成本之比例
-  private readonly _taxRatioInterval: number[] = [0.005, 0.012]
+  private readonly _taxRatioInterval: IInterval = {
+    min: 0.005, max: 0.012
+  }
 
   // 建築期間 - 常數 - 地上樓層數建築時間
   private readonly _groundFloorConstTime: number = 1
@@ -30,7 +42,7 @@ export class CostConditioner {
   private readonly _constPeriodThreshold: number = 1
 
 
-
+  // 計算單價等級 - 用於計算營造施工費區間
   private calculateUnitPriceLevel = (buildingArea: number, price: number): UnitPriceLevel | undefined => {
     const pyeong = buildingArea / square
     const unitPriceInPyeong = price / pyeong
@@ -55,7 +67,26 @@ export class CostConditioner {
     return unitPriceLevel
   }
 
-  // 計算營造施工費區間
+  // 計算建築期間等級 - 用於計算投資利潤率
+  private calculateConstPeriodLevel = (constructionPeriod: number) => {
+    if (constructionPeriod <= 1) {
+      return '0up'
+    } else if (constructionPeriod <= 2) {
+      return '1up'
+    } else if (constructionPeriod <= 3) {
+      return '2up'
+    } else if (constructionPeriod <= 4) {
+      return '3up'
+    } else if (constructionPeriod <= 5) {
+      return '4up'
+    } else {
+      return '5up'
+    }
+  }
+
+  // 計算營造施工費 - 區間
+  // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價) => 營造施工費區間
+  // ※有參照外部資料
   public getConstructionBudgetInterval = (
     countyCode: string,
     material: Material,
@@ -63,12 +94,12 @@ export class CostConditioner {
     groundFloor: string,
     buildingArea: number,
     price: number
-  ) => {
+  ): IInterval | undefined => {
     const buildCostRange: IBuildCostRange = buildCostRangeJson
     const costRangeTable = buildCostRange[countyCode][material][buildingPurpose][groundFloor]
     if (isFactory(costRangeTable)) {
       if (!costRangeTable.min || !costRangeTable.max) return undefined
-      return [costRangeTable.min, costRangeTable.max]
+      return { min: costRangeTable.min, max: costRangeTable.max }
     } else {
       const unitPriceLevel = this.calculateUnitPriceLevel(
         buildingArea, price
@@ -77,7 +108,7 @@ export class CostConditioner {
       const min = costRangeTable[unitPriceLevel].min
       const max = costRangeTable[unitPriceLevel].max
       if (!min || !max) return undefined
-      return [min, max]
+      return { min: min, max: max }
     }
   }
 
@@ -95,8 +126,33 @@ export class CostConditioner {
 
   // 計算投資利潤率
   // (建築期間(年), 縣市代碼) => 投資利潤率
-  public getEPR = (constructionPeriod: number, countyCode: string) => {
+  // ※有參照外部資料
+  public getEPRInterval = (constructionPeriod: number, countyCode: string) => {
+    const eprRange: IEPRRange = eprRangeJson
+    const constPeriodLevel = this.calculateConstPeriodLevel(constructionPeriod)
+    return [
+      eprRange[countyCode][constPeriodLevel].min,
+      eprRange[countyCode][constPeriodLevel].max
+    ]
+  }
 
+  // 計算營造物價指數調整率
+  // (建物交易屋齡) => 營造物價指數調整率
+  // ※有參照外部資料
+  // ※尚未實作
+  public getConstAdjRatio = (transactionAge: number) => {
+    return 1.0489
+  }
+
+  // 計算規劃設計費用(元) - 區間
+  // (營造施工費區間, 營造物價指數調整率) => 規劃設計費用區間
+  public getDesignBudgetInterval = (
+    constBudgetInterval: IInterval,
+    constAdjRatio: number
+  ): IInterval => {
+    const min = constBudgetInterval.min * constAdjRatio * this._designRatioInterval.min
+    const max = constBudgetInterval.max * constAdjRatio * this._designRatioInterval.max
+    return { min: min, max: max }
   }
 
 }

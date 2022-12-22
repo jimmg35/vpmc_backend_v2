@@ -62,9 +62,19 @@ export default class CostController extends BaseController {
       Number(params.groundFloor), Number(params.underGroundFloor)
     )
 
-    // 取得投資利潤率 - EPR
-    const EPR = this.costConditioner.getEPR(
+    // 取得投資利潤率區間 - EPRInterval
+    const EPRInterval = this.costConditioner.getEPRInterval(
       constructionPeriod, params.countyCode
+    )
+
+    // 取得營造物價指數調整率 - constAdjRatio
+    const constAdjRatio = this.costConditioner.getConstAdjRatio(
+      9999
+    )
+
+    // 取得規劃設計費用區間 - designBudgetInterval
+    const designBudgetInterval = this.costConditioner.getDesignBudgetInterval(
+      constBudgetInterval, constAdjRatio
     )
 
 
