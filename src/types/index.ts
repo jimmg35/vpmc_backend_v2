@@ -20,7 +20,7 @@ export type BuildingPurpose = 'resident' | 'factory'
 export type Material = 'concrete' | 'brick' | 'steel'
 export type UnitPriceLevel = '50below' | '50-75' | '75-100' | '100-125' |
   '125-150' | '150-180' | '180-210' | '210up'
-
+export type BudgetType = 'ad' | 'manage' | 'tax'
 export interface IMinMax {
   min: number | null
   max: number | null

@@ -84,9 +84,21 @@ export default class CostController extends BaseController {
     )
 
     // 取得廣告銷售費用區間 - adBudgetInterval
-    const adBudgetInterval = this.costConditioner.getAdBudgetInterval(
+    const adBudgetInterval = this.costConditioner.getReverseBudgetInterval(
       constBudgetInterval, designBudgetInterval,
-      EPRInterval, ICRRatio
+      EPRInterval, ICRRatio, 'ad'
+    )
+
+    // 取得管理費用區間 - manageBudgetInterval
+    const manageBudgetInterval = this.costConditioner.getReverseBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      EPRInterval, ICRRatio, 'manage'
+    )
+
+    // 取得稅捐及其他費用區間 - taxBudgetInterval
+    const taxBudgetInterval = this.costConditioner.getReverseBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      EPRInterval, ICRRatio, 'tax'
     )
 
 

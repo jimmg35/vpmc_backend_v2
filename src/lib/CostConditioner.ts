@@ -2,12 +2,12 @@ import { container } from "tsyringe"
 import {
   square, UnitPriceLevel, isFactory,
   IMinMax, IBuildCostRange, Material,
-  BuildingPurpose, IEPRRange, IInterval
+  BuildingPurpose, IEPRRange, IInterval,
+  BudgetType
 } from "../types"
 import buildCostRangeJson from '../controllers/CostController/tables/buildCostRange.json'
 import eprRangeJson from '../controllers/CostController/tables/eprRange.json'
 import bankLoanTable from '../controllers/CostController/tables/bankLoanTable.json'
-
 
 export class CostConditioner {
 
@@ -189,15 +189,29 @@ export class CostConditioner {
     return { min: min, max: max }
   }
 
-  // 計算廣告銷售費用(元) - 區間
-  // (取得營造施工費區間, 規劃設計費用區間, 投資利潤率區間, 資本利息綜合利率) => 廣告銷售費用區間
-  public getAdBudgetInterval = (
+  // 計算廣告銷售費用(元)   - 區間
+  // 計算管理費用(元)       - 區間
+  // 計算稅捐及其他費用(元) - 區間
+  // (營造施工費區間, 規劃設計費用區間, 投資利潤率區間, 資本利息綜合利率
+  //  費用類別) => 廣告銷售費用區間
+  public getReverseBudgetInterval = (
     constBudgetInterval: IInterval,
     designBudgetInterval: IInterval,
     EPRInterval: IInterval,
-    ICRRatio: number
-  ): IInterval => {
-    const minNumerator = this._adRatioInterval.min *
+    ICRRatio: number,
+    budgetType: BudgetType
+  ): IInterval | undefined => {
+    const inputRatioMin =
+      (budgetType === 'ad' && this._adRatioInterval.min) ||
+      (budgetType === 'manage' && this._manageRatioInterval.min) ||
+      (budgetType === 'tax' && this._taxRatioInterval.min)
+    const inputRatioMax =
+      (budgetType === 'ad' && this._adRatioInterval.max) ||
+      (budgetType === 'manage' && this._manageRatioInterval.max) ||
+      (budgetType === 'tax' && this._taxRatioInterval.max)
+
+    if (!inputRatioMin || !inputRatioMax) return undefined
+    const minNumerator = inputRatioMin *
       (constBudgetInterval.min + designBudgetInterval.min) *
       (this._AdConstant1 + ICRRatio) *
       (this._AdConstant2 + EPRInterval.min)
@@ -207,7 +221,7 @@ export class CostConditioner {
       (this._AdConstant5 + EPRInterval.min)
     )
     const min = minNumerator / minDeNumerator
-    const maxNumerator = this._adRatioInterval.max *
+    const maxNumerator = inputRatioMax *
       (constBudgetInterval.max + designBudgetInterval.max) *
       (this._AdConstant1 + ICRRatio) *
       (this._AdConstant2 + EPRInterval.max)
