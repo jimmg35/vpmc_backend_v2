@@ -47,6 +47,16 @@ export class CostConditioner {
   private readonly _ICROwnRatio: number = 0.4
   // 資本利息綜合利率 - 常數 - 融資借貸比例
   private readonly _ICRLoanRation: number = 0.6
+  // 廣告銷售費用區間 - 常數 - 常數1
+  private readonly _AdConstant1: number = 1
+  // 廣告銷售費用區間 - 常數 - 常數2
+  private readonly _AdConstant2: number = 1
+  // 廣告銷售費用區間 - 常數 - 常數3
+  private readonly _AdConstant3: number = 1
+  // 廣告銷售費用區間 - 常數 - 常數4
+  private readonly _AdConstant4: number = 1
+  // 廣告銷售費用區間 - 常數 - 常數5
+  private readonly _AdConstant5: number = 1
 
 
   // 計算單價等級 - 用於計算營造施工費區間
@@ -139,7 +149,8 @@ export class CostConditioner {
     return ICRRatio
   }
 
-  // 計算營造施工費(元) - 區間
+
+  // 計算營造施工費(元)   - 區間
   // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價) => 營造施工費區間
   // ※有參照外部資料
   public getConstructionBudgetInterval = (
@@ -184,8 +195,32 @@ export class CostConditioner {
     constBudgetInterval: IInterval,
     designBudgetInterval: IInterval,
     EPRInterval: IInterval,
-  ) => {
-
+    ICRRatio: number
+  ): IInterval => {
+    const minNumerator = this._adRatioInterval.min *
+      (constBudgetInterval.min + designBudgetInterval.min) *
+      (this._AdConstant1 + ICRRatio) *
+      (this._AdConstant2 + EPRInterval.min)
+    const minDeNumerator = (this._AdConstant3 -
+      (this._adRatioInterval.min + this._manageRatioInterval.min + this._taxRatioInterval.min) *
+      (this._AdConstant4 + ICRRatio) *
+      (this._AdConstant5 + EPRInterval.min)
+    )
+    const min = minNumerator / minDeNumerator
+    const maxNumerator = this._adRatioInterval.max *
+      (constBudgetInterval.max + designBudgetInterval.max) *
+      (this._AdConstant1 + ICRRatio) *
+      (this._AdConstant2 + EPRInterval.max)
+    const maxDeNumerator = (this._AdConstant3 -
+      (this._adRatioInterval.max + this._manageRatioInterval.max + this._taxRatioInterval.max) *
+      (this._AdConstant4 + ICRRatio) *
+      (this._AdConstant5 + EPRInterval.max)
+    )
+    const max = maxNumerator / maxDeNumerator
+    return {
+      min: min,
+      max: max
+    }
   }
 
 }

@@ -85,7 +85,8 @@ export default class CostController extends BaseController {
 
     // 取得廣告銷售費用區間 - adBudgetInterval
     const adBudgetInterval = this.costConditioner.getAdBudgetInterval(
-      constBudgetInterval, designBudgetInterval, EPRInterval
+      constBudgetInterval, designBudgetInterval,
+      EPRInterval, ICRRatio
     )
 
 
