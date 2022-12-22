@@ -1,13 +1,34 @@
 import { container } from "tsyringe"
-import { square, UnitPriceLevel, isFactory, IMinMax } from "../types"
+import {
+  square, UnitPriceLevel, isFactory, IMinMax, IBuildCostRange, Material, BuildingPurpose
+} from "../types"
+import buildCostRangeJson from '../controllers/CostController/tables/buildCostRange.json'
+
 
 export class CostConditioner {
 
-  // 常數
+  // **** 常數 ****
+  //
   // 設計費用占實際營造施工費用之比例
-  private _designRatioInterval: number[] = [0.02, 0.03]
-  private _adRatioInterval: number[] = [0.03, 0.07]
-  private _manageRationInterval: number[] = [0.03, 0.07]
+  private readonly _designRatioInterval: number[] = [0.02, 0.03]
+  // 廣告銷售費用占總成本之比例
+  private readonly _adRatioInterval: number[] = [0.03, 0.07]
+  // 管理費用占總成本之比例
+  private readonly _manageRatioInterval: number[] = [0.005, 0.05]
+  // 稅捐費用占總成本之比例
+  private readonly _taxRatioInterval: number[] = [0.005, 0.012]
+
+  // 建築期間 - 常數 - 地上樓層數建築時間
+  private readonly _groundFloorConstTime: number = 1
+  // 建築期間 - 常數 - 地下樓層數建築時間
+  private readonly _underGroundFloorConstTime: number = 2
+  // 建築期間 - 常數 - 建築期間常數
+  private readonly _consConstant: number = 6
+  // 建築期間 - 常數 - 建築年(月)
+  private readonly _constMonth: number = 12
+  // 建築期間 - 常數 - 年限門檻
+  private readonly _constPeriodThreshold: number = 1
+
 
 
   private calculateUnitPriceLevel = (buildingArea: number, price: number): UnitPriceLevel | undefined => {
@@ -34,13 +55,17 @@ export class CostConditioner {
     return unitPriceLevel
   }
 
+  // 計算營造施工費區間
   public getConstructionBudgetInterval = (
-    costRangeTable: IMinMax | {
-      "50below": IMinMax; "50-75": IMinMax; "75-100": IMinMax; "100-125": IMinMax;
-      "125-150": IMinMax; "150-180": IMinMax; "180-210": IMinMax; "210up": IMinMax;
-    },
-    buildingArea: number, price: number
+    countyCode: string,
+    material: Material,
+    buildingPurpose: BuildingPurpose,
+    groundFloor: string,
+    buildingArea: number,
+    price: number
   ) => {
+    const buildCostRange: IBuildCostRange = buildCostRangeJson
+    const costRangeTable = buildCostRange[countyCode][material][buildingPurpose][groundFloor]
     if (isFactory(costRangeTable)) {
       if (!costRangeTable.min || !costRangeTable.max) return undefined
       return [costRangeTable.min, costRangeTable.max]
@@ -54,6 +79,24 @@ export class CostConditioner {
       if (!min || !max) return undefined
       return [min, max]
     }
+  }
+
+  // 計算建築期間(年)
+  // (地上樓層數, 地下樓層數) => 建築期間(年)
+  public getConstructionPeriod = (groundFloor: number, underGroundFloor: number) => {
+    const constructionPeriod = (
+      (groundFloor * this._groundFloorConstTime) +
+      (underGroundFloor * this._underGroundFloorConstTime) +
+      this._consConstant
+    ) / this._constMonth;
+    if (constructionPeriod < this._constPeriodThreshold) return this._constPeriodThreshold
+    return constructionPeriod
+  }
+
+  // 計算投資利潤率
+  // (建築期間(年), 縣市代碼) => 投資利潤率
+  public getEPR = (constructionPeriod: number, countyCode: string) => {
+
   }
 
 }

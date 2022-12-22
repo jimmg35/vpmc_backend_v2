@@ -45,16 +45,27 @@ export default class CostController extends BaseController {
   public quick = async (req: Request, res: Response) => {
     const params: ICostQuickParam = { ...req.body }
 
-    // 變數
-    const constCostAdjRatio = 0.10489 // 營造物價指數調整率
 
-
-    // 取得營造施工費區間
-    const costRangeTable = buildCostRange[params.countyCode][params.material][params.buildingPurpose][params.groundFloor]
+    // 取得營造施工費區間 - constBudgetInterval
     const constBudgetInterval = this.costConditioner.getConstructionBudgetInterval(
-      costRangeTable, params.buildingArea, params.price
+      params.countyCode,
+      params.material,
+      params.buildingPurpose,
+      params.groundFloor,
+      params.buildingArea,
+      params.price
     )
     if (!constBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得營造施工費區間' })
+
+    // 取得建築期間(年) - constructionTime
+    const constructionPeriod = this.costConditioner.getConstructionPeriod(
+      Number(params.groundFloor), Number(params.underGroundFloor)
+    )
+
+    // 取得投資利潤率 - EPR
+    const EPR = this.costConditioner.getEPR(
+      constructionPeriod, params.countyCode
+    )
 
 
 
