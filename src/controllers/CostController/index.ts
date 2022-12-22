@@ -44,7 +44,10 @@ export default class CostController extends BaseController {
 
   public quick = async (req: Request, res: Response) => {
     const params: ICostQuickParam = { ...req.body }
-
+    params.price = Number(params.price)
+    params.buildingArea = Number(params.buildingArea)
+    params.steelCharge = Boolean(params.steelCharge)
+    console.log(typeof params.price)
 
     // 取得建築期間(年) - constructionTime
     const constructionPeriod = this.costConditioner.getConstructionPeriod(
@@ -67,6 +70,7 @@ export default class CostController extends BaseController {
     )
 
 
+
     // 取得營造施工費區間 - constBudgetInterval
     const constBudgetInterval = this.costConditioner.getConstructionBudgetInterval(
       params.countyCode,
@@ -86,23 +90,29 @@ export default class CostController extends BaseController {
     // 取得廣告銷售費用區間 - adBudgetInterval
     const adBudgetInterval = this.costConditioner.getReverseBudgetInterval(
       constBudgetInterval, designBudgetInterval,
-      EPRInterval, ICRRatio, 'ad'
+      EPRInterval, ICRRatio, constAdjRatio, 'ad'
     )
+    if (!adBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得廣告銷售費用區間' })
 
     // 取得管理費用區間 - manageBudgetInterval
     const manageBudgetInterval = this.costConditioner.getReverseBudgetInterval(
       constBudgetInterval, designBudgetInterval,
-      EPRInterval, ICRRatio, 'manage'
+      EPRInterval, ICRRatio, constAdjRatio, 'manage'
     )
+    if (!manageBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得管理費用區間' })
 
     // 取得稅捐及其他費用區間 - taxBudgetInterval
     const taxBudgetInterval = this.costConditioner.getReverseBudgetInterval(
       constBudgetInterval, designBudgetInterval,
-      EPRInterval, ICRRatio, 'tax'
+      EPRInterval, ICRRatio, constAdjRatio, 'tax'
     )
+    if (!taxBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得稅捐及其他費用區間' })
 
-
-
+    console.log(constBudgetInterval)
+    console.log(designBudgetInterval)
+    console.log(adBudgetInterval)
+    console.log(manageBudgetInterval)
+    console.log(taxBudgetInterval)
 
 
 

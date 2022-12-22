@@ -9,4 +9,5 @@ export interface ICostQuickParam {
   groundFloor: string
   underGroundFloor: string
   price: number
+  steelCharge: boolean
 }

@@ -64,21 +64,21 @@ export class CostConditioner {
     const pyeong = buildingArea / square
     const unitPriceInPyeong = price / pyeong
     let unitPriceLevel: UnitPriceLevel | undefined = undefined
-    if (unitPriceInPyeong <= 50) {
+    if (unitPriceInPyeong <= 500000) {
       unitPriceLevel = '50below'
-    } else if (unitPriceInPyeong > 50 && unitPriceInPyeong <= 75) {
+    } else if (unitPriceInPyeong > 500000 && unitPriceInPyeong <= 750000) {
       unitPriceLevel = '50-75'
-    } else if (unitPriceInPyeong > 75 && unitPriceInPyeong <= 100) {
+    } else if (unitPriceInPyeong > 750000 && unitPriceInPyeong <= 1000000) {
       unitPriceLevel = '75-100'
-    } else if (unitPriceInPyeong > 100 && unitPriceInPyeong <= 125) {
+    } else if (unitPriceInPyeong > 1000000 && unitPriceInPyeong <= 1250000) {
       unitPriceLevel = '100-125'
-    } else if (unitPriceInPyeong > 125 && unitPriceInPyeong <= 150) {
+    } else if (unitPriceInPyeong > 1250000 && unitPriceInPyeong <= 1500000) {
       unitPriceLevel = '125-150'
-    } else if (unitPriceInPyeong > 150 && unitPriceInPyeong <= 180) {
+    } else if (unitPriceInPyeong > 1500000 && unitPriceInPyeong <= 1800000) {
       unitPriceLevel = '150-180'
-    } else if (unitPriceInPyeong > 180 && unitPriceInPyeong <= 210) {
+    } else if (unitPriceInPyeong > 1800000 && unitPriceInPyeong <= 2100000) {
       unitPriceLevel = '180-210'
-    } else if (unitPriceInPyeong > 210) {
+    } else if (unitPriceInPyeong > 2100000) {
       unitPriceLevel = '210up'
     }
     return unitPriceLevel
@@ -161,6 +161,12 @@ export class CostConditioner {
     buildingArea: number,
     price: number
   ): IInterval | undefined => {
+    // let isSteelCharge: boolean = false
+    // if (material === 'concrete' || material === 'steel') {
+    //   isSteelCharge = true
+    // }
+
+
     const buildCostRange: IBuildCostRange = buildCostRangeJson
     const costRangeTable = buildCostRange[countyCode][material][buildingPurpose][groundFloor]
     if (isFactory(costRangeTable)) {
@@ -199,6 +205,7 @@ export class CostConditioner {
     designBudgetInterval: IInterval,
     EPRInterval: IInterval,
     ICRRatio: number,
+    constAdjRatio: number,
     budgetType: BudgetType
   ): IInterval | undefined => {
     const inputRatioMin =
@@ -212,7 +219,7 @@ export class CostConditioner {
 
     if (!inputRatioMin || !inputRatioMax) return undefined
     const minNumerator = inputRatioMin *
-      (constBudgetInterval.min + designBudgetInterval.min) *
+      (constBudgetInterval.min * constAdjRatio + designBudgetInterval.min) *
       (this._AdConstant1 + ICRRatio) *
       (this._AdConstant2 + EPRInterval.min)
     const minDeNumerator = (this._AdConstant3 -
@@ -222,7 +229,7 @@ export class CostConditioner {
     )
     const min = minNumerator / minDeNumerator
     const maxNumerator = inputRatioMax *
-      (constBudgetInterval.max + designBudgetInterval.max) *
+      (constBudgetInterval.max * constAdjRatio + designBudgetInterval.max) *
       (this._AdConstant1 + ICRRatio) *
       (this._AdConstant2 + EPRInterval.max)
     const maxDeNumerator = (this._AdConstant3 -
