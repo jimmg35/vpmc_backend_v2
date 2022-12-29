@@ -77,7 +77,8 @@ export default class CostController extends BaseController {
       params.buildingPurpose,
       params.groundFloor,
       params.buildingArea,
-      params.price
+      params.price,
+      params.steelCharge
     )
     if (!constBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得營造施工費區間' })
 
@@ -119,6 +120,11 @@ export default class CostController extends BaseController {
       totalBudgetInterval, ICRRatio, EPRInterval
     )
 
+    console.log(constBudgetInterval)
+    console.log(designBudgetInterval)
+    console.log(adBudgetInterval)
+    console.log(manageBudgetInterval)
+    console.log(taxBudgetInterval)
     // buildingCostInterval
 
 

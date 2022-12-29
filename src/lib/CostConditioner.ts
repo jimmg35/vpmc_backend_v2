@@ -61,6 +61,11 @@ export class CostConditioner {
   private readonly _BuildingCostConstant1: number = 1
   // 建物成本單價區間 - 常數 - 常數2
   private readonly _BuildingCostConstant2: number = 1
+  // 營造施工費區間 - 常數 - 鋼骨加價1
+  private readonly _ConstBudgetSteelCharge1: number = 0
+  // 營造施工費區間 - 常數 - 鋼骨加價2
+  private readonly _ConstBudgetSteelCharge2: number = 20000
+
 
 
   // 計算單價等級 - 用於計算營造施工費區間
@@ -156,7 +161,7 @@ export class CostConditioner {
   /////////////////////////////////////////////////////////
 
   // 計算營造施工費(元)   - 區間
-  // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價) => 營造施工費區間
+  // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價, 是否鋼骨加價) => 營造施工費區間
   // ※有參照外部資料 - buildCostRangeJson
   public getConstBudgetInterval = (
     countyCode: string,
@@ -164,13 +169,18 @@ export class CostConditioner {
     buildingPurpose: BuildingPurpose,
     groundFloor: string,
     buildingArea: number,
-    price: number
+    price: number,
+    steelCharge: boolean
   ): IInterval | undefined => {
+    const steelChargePrice = steelCharge ? this._ConstBudgetSteelCharge2 : this._ConstBudgetSteelCharge1
     const buildCostRange: IBuildCostRange = buildCostRangeJson
     const costRangeTable = buildCostRange[countyCode][material][buildingPurpose][groundFloor]
     if (isFactory(costRangeTable)) {
       if (!costRangeTable.min || !costRangeTable.max) return undefined
-      return { min: costRangeTable.min, max: costRangeTable.max }
+      return {
+        min: costRangeTable.min + steelChargePrice,
+        max: costRangeTable.max + steelChargePrice
+      }
     } else {
       const unitPriceLevel = this.calculateUnitPriceLevel(
         buildingArea, price
@@ -179,7 +189,10 @@ export class CostConditioner {
       const min = costRangeTable[unitPriceLevel].min
       const max = costRangeTable[unitPriceLevel].max
       if (!min || !max) return undefined
-      return { min: min, max: max }
+      return {
+        min: min + steelChargePrice,
+        max: max + steelChargePrice
+      }
     }
   }
 
