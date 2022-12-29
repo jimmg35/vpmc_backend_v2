@@ -46,8 +46,9 @@ export default class CostController extends BaseController {
     const params: ICostQuickParam = { ...req.body }
     params.price = Number(params.price)
     params.buildingArea = Number(params.buildingArea)
-    params.steelCharge = Boolean(params.steelCharge)
+    params.steelCharge = (params.steelCharge === 'true')
     params.extendYears = Number(params.extendYears)
+    params.age = Number(params.age)
 
     // 取得建築期間(年) - constructionTime
     const constructionPeriod = this.costConditioner.getConstructionPeriod(
@@ -68,6 +69,9 @@ export default class CostController extends BaseController {
     const ICRRatio = this.costConditioner.getICRRatio(
       constructionPeriod
     )
+
+
+    ////////////////////////////////////////////////////
 
 
     // 取得營造施工費區間 - constBudgetInterval
@@ -112,7 +116,7 @@ export default class CostController extends BaseController {
     const totalBudgetInterval = this.costConditioner.getTotalBudgetInterval(
       constBudgetInterval, designBudgetInterval,
       adBudgetInterval, manageBudgetInterval,
-      taxBudgetInterval
+      taxBudgetInterval, constAdjRatio
     )
 
     // 取得建物成本單價(元/坪) - buildingCostInterval
@@ -120,14 +124,70 @@ export default class CostController extends BaseController {
       totalBudgetInterval, ICRRatio, EPRInterval
     )
 
-    console.log(constBudgetInterval)
-    console.log(designBudgetInterval)
-    console.log(adBudgetInterval)
-    console.log(manageBudgetInterval)
-    console.log(taxBudgetInterval)
-    // buildingCostInterval
+    ////////////////////////////////////////////////////
+
+    // 取得殘價率 - residualPriceRatio
+    const residualPriceRatio = this.costConditioner.getResidualPriceRatio(
+      params.material,
+      params.steelCharge
+    )
+
+    // 取得經濟耐用年數 - durableYears
+    const durableYears = this.costConditioner.getDurableYears(
+      params.buildingPurpose,
+      params.material
+    )
+    if (!durableYears) return res.status(BAD_REQUEST).json({ 'status': '無法取得經濟耐用年數，可能是用途與構造輸入錯誤' })
+
+    // 取得建物殘值率 - buildingResidualRation
+    const buildingResidualRation = this.costConditioner.getBuildingResidualRation(
+      durableYears,
+      residualPriceRatio,
+      params.extendYears,
+      params.age
+    )
+
+    // 取得折舊後建物單價 - depreciatedBuildingCostInterval
+    const depreciatedBuildingCostInterval = this.costConditioner.getDepreciatedBuildingCostInterval(
+      buildingCostInterval,
+      buildingResidualRation
+    )
+
+    ////////////////////////////////////////////////////
+
+    // 取得土地成本價格(元)區間
+    const landPriceCostInterval = this.costConditioner.getLandPriceCostInterval(
+      params.price,
+      params.buildingArea,
+      depreciatedBuildingCostInterval
+    )
+
+    // 取得土地折舊率
+    const landDepreciationRatio = this.costConditioner.getLandDepreciationRatio(
+      params.extendYears,
+      params.age,
+      durableYears
+    )
+
+    // 取得土地的資本利息綜合利率
+    const landICRRatio = this.costConditioner.getLandICRRatio(
+      constructionPeriod
+    )
+
+    console.log(landICRRatio)
 
 
+
+    // this.costConditioner.logResults(
+    //   constBudgetInterval,
+    //   designBudgetInterval,
+    //   adBudgetInterval,
+    //   manageBudgetInterval,
+    //   taxBudgetInterval,
+    //   totalBudgetInterval,
+    //   buildingCostInterval,
+    //   depreciatedBuildingCostInterval
+    // )
 
 
 

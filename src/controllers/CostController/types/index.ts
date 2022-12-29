@@ -5,10 +5,10 @@ export interface ICostQuickParam {
   buildingArea: number
   buildingPurpose: BuildingPurpose
   material: Material
-  completionTime: string
+  age: number
   groundFloor: string
   underGroundFloor: string
   price: number
-  steelCharge: boolean
+  steelCharge: boolean | string
   extendYears: number
 }

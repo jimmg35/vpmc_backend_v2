@@ -9,10 +9,17 @@ import buildCostRangeJson from '../controllers/CostController/tables/buildCostRa
 import eprRangeJson from '../controllers/CostController/tables/eprRange.json'
 import bankLoanTable from '../controllers/CostController/tables/bankLoanTable.json'
 
+const round2Decimal = (value: number) => {
+  return Math.round((value + Number.EPSILON) * 100) / 100
+}
+
+
 export class CostConditioner {
 
   // **** 常數 ****
   //
+  // 常數 - 一坪換算平方公尺
+  private readonly _square: number = 3.305785
   // 設計費用占實際營造施工費用之比例
   private readonly _designRatioInterval: IInterval = {
     min: 0.02, max: 0.03
@@ -67,10 +74,29 @@ export class CostConditioner {
   private readonly _ConstBudgetSteelCharge2: number = 20000
 
 
+  public logResults = (
+    constBudgetInterval: IInterval,
+    designBudgetInterval: IInterval,
+    adBudgetInterval: IInterval,
+    manageBudgetInterval: IInterval,
+    taxBudgetInterval: IInterval,
+    totalBudgetInterval: IInterval,
+    buildingCostInterval: IInterval,
+    depreciatedBuildingCostInterval: IInterval
+  ) => {
+    console.log(`營造施工費區間      : 最小:${round2Decimal(constBudgetInterval.min)}    |  最大:${round2Decimal(constBudgetInterval.max)}`)
+    console.log(`規劃設計費區間      : 最小:${round2Decimal(designBudgetInterval.min)}  |  最大:${round2Decimal(designBudgetInterval.max)}`)
+    console.log(`廣告銷售費區間      : 最小:${round2Decimal(adBudgetInterval.min)}  |  最大:${round2Decimal(adBudgetInterval.max)}`)
+    console.log(`管理費區間          : 最小:${round2Decimal(manageBudgetInterval.min)}   |  最大:${round2Decimal(manageBudgetInterval.max)}`)
+    console.log(`稅捐及其他費區間    : 最小:${round2Decimal(taxBudgetInterval.min)}   |  最大:${round2Decimal(taxBudgetInterval.max)}`)
+    console.log(`費用合計區間        : 最小:${round2Decimal(totalBudgetInterval.min)} |  最大:${round2Decimal(totalBudgetInterval.max)}`)
+    console.log(`建物成本單價區間    : 最小:${round2Decimal(buildingCostInterval.min)}  |  最大:${round2Decimal(buildingCostInterval.max)}`)
+    console.log(`折舊後建物單價區間  : 最小:${round2Decimal(depreciatedBuildingCostInterval.min)} |  最大:${round2Decimal(depreciatedBuildingCostInterval.max)}`)
+  }
 
   // 計算單價等級 - 用於計算營造施工費區間
   private calculateUnitPriceLevel = (buildingArea: number, price: number): UnitPriceLevel | undefined => {
-    const pyeong = buildingArea / square
+    const pyeong = buildingArea / this._square
     const unitPriceInPyeong = price / pyeong
     let unitPriceLevel: UnitPriceLevel | undefined = undefined
     if (unitPriceInPyeong <= 500000) {
@@ -158,7 +184,9 @@ export class CostConditioner {
     return ICRRatio
   }
 
+
   /////////////////////////////////////////////////////////
+
 
   // 計算營造施工費(元)   - 區間
   // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價, 是否鋼骨加價) => 營造施工費區間
@@ -256,21 +284,20 @@ export class CostConditioner {
     }
   }
 
-  /////////////////////////////////////////////////////////
-
   // 計算費用合計(元)       - 區間
   // (營造施工費區間, 規劃設計費用區間, 廣告銷售費用區間,
-  //  管理費用區間, 稅捐及其他費用區間) => 費用合計區間
+  //  管理費用區間, 稅捐及其他費用區間, 營造物價指數調整率) => 費用合計區間
   public getTotalBudgetInterval = (
     constBudgetInterval: IInterval,
     designBudgetInterval: IInterval,
     adBudgetInterval: IInterval,
     manageBudgetInterval: IInterval,
-    taxBudgetInterval: IInterval
+    taxBudgetInterval: IInterval,
+    constAdjRatio: number
   ): IInterval => {
-    const min = constBudgetInterval.min + designBudgetInterval.min +
+    const min = constBudgetInterval.min * constAdjRatio + designBudgetInterval.min +
       adBudgetInterval.min + manageBudgetInterval.min + taxBudgetInterval.min;
-    const max = constBudgetInterval.max + designBudgetInterval.max +
+    const max = constBudgetInterval.max * constAdjRatio + designBudgetInterval.max +
       adBudgetInterval.max + manageBudgetInterval.max + taxBudgetInterval.max;
     return {
       min: min,
@@ -294,6 +321,153 @@ export class CostConditioner {
       max: max
     }
   }
+
+
+  /////////////////////////////////////////////////////////
+
+
+  // 計算殘價率
+  // (建材, 是否鋼骨加價)
+  public getResidualPriceRatio = (
+    material: Material,
+    steelCharge: boolean
+  ) => {
+    let residualPriceRatio = 0
+    if (material === 'steel') residualPriceRatio = 0.1
+    if (material === 'concrete' && steelCharge) residualPriceRatio = 0.1
+    if (material === 'concrete' && !steelCharge) residualPriceRatio = 0.05
+    return residualPriceRatio
+  }
+
+  // 計算經濟耐用年數
+  // (使用型態, 構造) => 經濟耐用年數
+  public getDurableYears = (
+    purpose: BuildingPurpose,
+    material: Material
+  ) => {
+    let durableYears: number | undefined = undefined
+    if (
+      (purpose === 'resident' || purpose === 'office' || purpose === 'store') &&
+      (material === 'concrete')
+    ) {
+      durableYears = 50
+    } else {
+      if (
+        (purpose === 'resident' || purpose === 'office' || purpose === 'store') &&
+        (material === 'brick')
+      ) {
+        durableYears = 35
+      } else {
+        if (
+          (purpose === 'resident' || purpose === 'office' || purpose === 'store') &&
+          (material === 'steel')
+        ) {
+          durableYears = 20
+        } else {
+
+          if (
+            (purpose === 'factory') &&
+            (material === 'concrete')
+          ) {
+            durableYears = 35
+          } else {
+
+            if (
+              (purpose === 'factory') &&
+              (material === 'brick')
+            ) {
+              durableYears = 30
+            } else {
+
+              if (
+                (purpose === 'factory') &&
+                (material === 'steel')
+              ) {
+                durableYears = 15
+              }
+            }
+          }
+        }
+      }
+    }
+    return durableYears
+  }
+
+  // 計算建物殘值率
+  // (經濟耐用年數, 殘價率, 延長耐用年數, 屋齡) => 建物殘值率
+  public getBuildingResidualRation = (
+    durableYears: number,
+    residualPriceRatio: number,
+    extendYears: number,
+    age: number
+  ) => {
+    if (extendYears === 0) {
+      return 1 - age * (1 - residualPriceRatio) / durableYears
+    } else {
+      return 1 - age * (1 - residualPriceRatio) / (age + extendYears)
+    }
+  }
+
+  // 計算折舊後建物單價    -  區間
+  // (建物成本單價區間, 建物殘值率) => 折舊後建物單價區間
+  public getDepreciatedBuildingCostInterval = (
+    buildingCostInterval: IInterval,
+    buildingResidualRation: number
+  ): IInterval => {
+    const min = buildingCostInterval.min * buildingResidualRation
+    const max = buildingCostInterval.max * buildingResidualRation
+    return {
+      min: min,
+      max: max
+    }
+  }
+
+
+  /////////////////////////////////////////////////////////
+
+  // 計算土地成本價格(元) - 區間
+  // (房地總價, 建物面積(平方公尺), 折舊後建物單價區間)
+  public getLandPriceCostInterval = (
+    price: number,
+    buildingArea: number,
+    depreciatedBuildingCostInterval: IInterval
+  ): IInterval => {
+    const minDBCtotal = depreciatedBuildingCostInterval.min * buildingArea / this._square
+    const maxDBCtotal = depreciatedBuildingCostInterval.max * buildingArea / this._square
+    const min = price - minDBCtotal
+    const max = price - maxDBCtotal
+    return {
+      min: min,
+      max: max
+    }
+  }
+
+  // 計算土地折舊率
+  // (延長耐用年數, 屋齡, 經濟耐用年數) => 土地折舊率
+  public getLandDepreciationRatio = (
+    extendYears: number,
+    age: number,
+    durableYears: number
+  ) => {
+    if (extendYears === 0) {
+      return age * 1 / durableYears
+    } else {
+      return age * 1 / (age + extendYears)
+    }
+  }
+
+  // 計算土地的資本利息綜合利率
+  // ※有參照外部資料 - bankLoanTable
+  // (建築期間(年)) => 土地的資本利息綜合利率
+  public getLandICRRatio = (
+    constructionPeriod: number
+  ) => {
+    return constructionPeriod * (
+      this._ICROwnRatio * bankLoanTable.ownRatio +
+      this._ICRLoanRation * bankLoanTable.loanRatio
+    )
+  }
+
 
 }
 
