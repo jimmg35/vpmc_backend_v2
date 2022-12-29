@@ -16,7 +16,7 @@ export enum buildingType {
 
 export const square = 3.305785
 
-export type BuildingPurpose = 'resident' | 'factory'
+export type BuildingPurpose = 'resident' | 'office' | 'store' | 'factory'
 export type Material = 'concrete' | 'brick' | 'steel'
 export type UnitPriceLevel = '50below' | '50-75' | '75-100' | '100-125' |
   '125-150' | '150-180' | '180-210' | '210up'
