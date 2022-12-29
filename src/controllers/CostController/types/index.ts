@@ -10,4 +10,5 @@ export interface ICostQuickParam {
   underGroundFloor: string
   price: number
   steelCharge: boolean
+  extendYears: number
 }

@@ -47,7 +47,7 @@ export default class CostController extends BaseController {
     params.price = Number(params.price)
     params.buildingArea = Number(params.buildingArea)
     params.steelCharge = Boolean(params.steelCharge)
-    console.log(typeof params.price)
+    params.extendYears = Number(params.extendYears)
 
     // 取得建築期間(年) - constructionTime
     const constructionPeriod = this.costConditioner.getConstructionPeriod(
@@ -70,9 +70,8 @@ export default class CostController extends BaseController {
     )
 
 
-
     // 取得營造施工費區間 - constBudgetInterval
-    const constBudgetInterval = this.costConditioner.getConstructionBudgetInterval(
+    const constBudgetInterval = this.costConditioner.getConstBudgetInterval(
       params.countyCode,
       params.material,
       params.buildingPurpose,
@@ -108,11 +107,19 @@ export default class CostController extends BaseController {
     )
     if (!taxBudgetInterval) return res.status(BAD_REQUEST).json({ 'status': '無法取得稅捐及其他費用區間' })
 
-    console.log(constBudgetInterval)
-    console.log(designBudgetInterval)
-    console.log(adBudgetInterval)
-    console.log(manageBudgetInterval)
-    console.log(taxBudgetInterval)
+    // 取得費用合計(元) - totalBudgetInterval
+    const totalBudgetInterval = this.costConditioner.getTotalBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      adBudgetInterval, manageBudgetInterval,
+      taxBudgetInterval
+    )
+
+    // 取得建物成本單價(元/坪) - buildingCostInterval
+    const buildingCostInterval = this.costConditioner.getBuildingCostInterval(
+      totalBudgetInterval, ICRRatio, EPRInterval
+    )
+
+    // buildingCostInterval
 
 
 

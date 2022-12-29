@@ -57,6 +57,10 @@ export class CostConditioner {
   private readonly _AdConstant4: number = 1
   // 廣告銷售費用區間 - 常數 - 常數5
   private readonly _AdConstant5: number = 1
+  // 建物成本單價區間 - 常數 - 常數1
+  private readonly _BuildingCostConstant1: number = 1
+  // 建物成本單價區間 - 常數 - 常數2
+  private readonly _BuildingCostConstant2: number = 1
 
 
   // 計算單價等級 - 用於計算營造施工費區間
@@ -113,9 +117,9 @@ export class CostConditioner {
     return constructionPeriod
   }
 
-  // 計算投資利潤率
+  // 計算投資利潤率 - 區間
   // (建築期間(年), 縣市代碼) => 投資利潤率
-  // ※有參照外部資料
+  // ※有參照外部資料 - eprRangeJson
   public getEPRInterval = (
     constructionPeriod: number,
     countyCode: string
@@ -138,7 +142,7 @@ export class CostConditioner {
 
   // 計算資本利息綜合利率
   // (建築期間(年)) => 資本利息綜合利率
-  // ※有參照外部資料
+  // ※有參照外部資料 - bankLoanTable
   public getICRRatio = (
     constructionPeriod: number
   ) => {
@@ -149,11 +153,12 @@ export class CostConditioner {
     return ICRRatio
   }
 
+  /////////////////////////////////////////////////////////
 
   // 計算營造施工費(元)   - 區間
   // (縣市代碼, 建材, 用途, 地上樓, 建物面積, 房地總價) => 營造施工費區間
-  // ※有參照外部資料
-  public getConstructionBudgetInterval = (
+  // ※有參照外部資料 - buildCostRangeJson
+  public getConstBudgetInterval = (
     countyCode: string,
     material: Material,
     buildingPurpose: BuildingPurpose,
@@ -161,12 +166,6 @@ export class CostConditioner {
     buildingArea: number,
     price: number
   ): IInterval | undefined => {
-    // let isSteelCharge: boolean = false
-    // if (material === 'concrete' || material === 'steel') {
-    //   isSteelCharge = true
-    // }
-
-
     const buildCostRange: IBuildCostRange = buildCostRangeJson
     const costRangeTable = buildCostRange[countyCode][material][buildingPurpose][groundFloor]
     if (isFactory(costRangeTable)) {
@@ -238,6 +237,45 @@ export class CostConditioner {
       (this._AdConstant5 + EPRInterval.max)
     )
     const max = maxNumerator / maxDeNumerator
+    return {
+      min: min,
+      max: max
+    }
+  }
+
+  /////////////////////////////////////////////////////////
+
+  // 計算費用合計(元)       - 區間
+  // (營造施工費區間, 規劃設計費用區間, 廣告銷售費用區間,
+  //  管理費用區間, 稅捐及其他費用區間) => 費用合計區間
+  public getTotalBudgetInterval = (
+    constBudgetInterval: IInterval,
+    designBudgetInterval: IInterval,
+    adBudgetInterval: IInterval,
+    manageBudgetInterval: IInterval,
+    taxBudgetInterval: IInterval
+  ): IInterval => {
+    const min = constBudgetInterval.min + designBudgetInterval.min +
+      adBudgetInterval.min + manageBudgetInterval.min + taxBudgetInterval.min;
+    const max = constBudgetInterval.max + designBudgetInterval.max +
+      adBudgetInterval.max + manageBudgetInterval.max + taxBudgetInterval.max;
+    return {
+      min: min,
+      max: max
+    }
+  }
+
+  // 建物成本單價(元/坪)    - 區間
+  // (費用合計區間, 資本利息綜合利率, 投資利潤率區間) => 建物成本單價區間
+  public getBuildingCostInterval = (
+    totalBudgetInterval: IInterval,
+    ICRRatio: number,
+    EPRInterval: IInterval
+  ): IInterval => {
+    const min = totalBudgetInterval.min *
+      (this._BuildingCostConstant1 + ICRRatio) * (this._BuildingCostConstant2 + EPRInterval.min)
+    const max = totalBudgetInterval.max *
+      (this._BuildingCostConstant1 + ICRRatio) * (this._BuildingCostConstant2 + EPRInterval.max)
     return {
       min: min,
       max: max
