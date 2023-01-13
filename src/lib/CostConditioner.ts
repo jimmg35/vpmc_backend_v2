@@ -9,8 +9,8 @@ import buildCostRangeJson from '../controllers/CostController/tables/buildCostRa
 import eprRangeJson from '../controllers/CostController/tables/eprRange.json'
 import bankLoanTable from '../controllers/CostController/tables/bankLoanTable.json'
 
-const round2Decimal = (value: number) => {
-  return Math.round((value + Number.EPSILON) * 100) / 100
+const round4Decimal = (value: number) => {
+  return Math.round((value + Number.EPSILON) * 10000) / 10000
 }
 
 
@@ -82,16 +82,20 @@ export class CostConditioner {
     taxBudgetInterval: IInterval,
     totalBudgetInterval: IInterval,
     buildingCostInterval: IInterval,
-    depreciatedBuildingCostInterval: IInterval
+    depreciatedBuildingCostInterval: IInterval,
+    landCostInterval: IInterval,
+    pureLandPriceInterval: IInterval
   ) => {
-    console.log(`營造施工費區間      : 最小:${round2Decimal(constBudgetInterval.min)}    |  最大:${round2Decimal(constBudgetInterval.max)}`)
-    console.log(`規劃設計費區間      : 最小:${round2Decimal(designBudgetInterval.min)}  |  最大:${round2Decimal(designBudgetInterval.max)}`)
-    console.log(`廣告銷售費區間      : 最小:${round2Decimal(adBudgetInterval.min)}  |  最大:${round2Decimal(adBudgetInterval.max)}`)
-    console.log(`管理費區間          : 最小:${round2Decimal(manageBudgetInterval.min)}   |  最大:${round2Decimal(manageBudgetInterval.max)}`)
-    console.log(`稅捐及其他費區間    : 最小:${round2Decimal(taxBudgetInterval.min)}   |  最大:${round2Decimal(taxBudgetInterval.max)}`)
-    console.log(`費用合計區間        : 最小:${round2Decimal(totalBudgetInterval.min)} |  最大:${round2Decimal(totalBudgetInterval.max)}`)
-    console.log(`建物成本單價區間    : 最小:${round2Decimal(buildingCostInterval.min)}  |  最大:${round2Decimal(buildingCostInterval.max)}`)
-    console.log(`折舊後建物單價區間  : 最小:${round2Decimal(depreciatedBuildingCostInterval.min)} |  最大:${round2Decimal(depreciatedBuildingCostInterval.max)}`)
+    console.log(`營造施工費區間      : 最小:${(constBudgetInterval.min)}    |  最大:${(constBudgetInterval.max)}`)
+    console.log(`規劃設計費區間      : 最小:${(designBudgetInterval.min)}  |  最大:${(designBudgetInterval.max)}`)
+    console.log(`廣告銷售費區間      : 最小:${(adBudgetInterval.min)}  |  最大:${(adBudgetInterval.max)}`)
+    console.log(`管理費區間          : 最小:${(manageBudgetInterval.min)}   |  最大:${(manageBudgetInterval.max)}`)
+    console.log(`稅捐及其他費區間    : 最小:${(taxBudgetInterval.min)}   |  最大:${(taxBudgetInterval.max)}`)
+    console.log(`費用合計區間        : 最小:${(totalBudgetInterval.min)} |  最大:${(totalBudgetInterval.max)}`)
+    console.log(`建物成本單價區間    : 最小:${(buildingCostInterval.min)}  |  最大:${(buildingCostInterval.max)}`)
+    console.log(`折舊後建物單價區間  : 最小:${depreciatedBuildingCostInterval.min} |  最大:${depreciatedBuildingCostInterval.max}`)
+    console.log(`土地成本價格區間    : 最小:${(landCostInterval.min)} |  最大:${(landCostInterval.max)}`)
+    console.log(`土地素地價格區間    : 最小:${(pureLandPriceInterval.min)} |  最大:${(pureLandPriceInterval.max)}`)
   }
 
   // 計算單價等級 - 用於計算營造施工費區間
@@ -232,6 +236,7 @@ export class CostConditioner {
   ): IInterval => {
     const min = constBudgetInterval.min * constAdjRatio * this._designRatioInterval.min
     const max = constBudgetInterval.max * constAdjRatio * this._designRatioInterval.max
+    // return { min: round4Decimal(min), max: round4Decimal(max) }
     return { min: min, max: max }
   }
 
@@ -278,6 +283,10 @@ export class CostConditioner {
       (this._AdConstant5 + EPRInterval.max)
     )
     const max = maxNumerator / maxDeNumerator
+    // return {
+    //   min: round4Decimal(min),
+    //   max: round4Decimal(max)
+    // }
     return {
       min: min,
       max: max

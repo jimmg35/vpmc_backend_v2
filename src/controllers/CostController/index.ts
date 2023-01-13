@@ -9,7 +9,7 @@ import { JwtAuthenticator } from '../../lib/JwtAuthenticator'
 import { PermissionFilter } from '../../lib/PermissionFilter'
 import { ICostQuickParam } from './types'
 import buildCostRangeJson from './tables/buildCostRange.json'
-import { IBuildCostRange, IMinMax, isFactory } from '../../types'
+import { IBuildCostRange, IInterval, IMinMax, isFactory, square } from '../../types'
 import { CostConditioner } from '../../lib/CostConditioner'
 
 const buildCostRange: IBuildCostRange = buildCostRangeJson
@@ -49,6 +49,7 @@ export default class CostController extends BaseController {
     params.steelCharge = (params.steelCharge === 'true')
     params.extendYears = Number(params.extendYears)
     params.age = Number(params.age)
+    params.landArea = Number(params.landArea)
 
     // 取得建築期間(年) - constructionTime
     const constructionPeriod = this.costConditioner.getConstructionPeriod(
@@ -174,22 +175,62 @@ export default class CostController extends BaseController {
       constructionPeriod
     )
 
-    console.log(landICRRatio)
+    // 計算素地價格區間
+    const getLandCostInterval = (depreciatedBuildingCostInterval: IInterval): IInterval => {
+      const minBuildTotalCost = depreciatedBuildingCostInterval.min * params.buildingArea / square
+      const maxBuildTotalCost = depreciatedBuildingCostInterval.max * params.buildingArea / square
+      const minLandCost = params.price - minBuildTotalCost
+      const maxLandCost = params.price - maxBuildTotalCost
+      return {
+        min: minLandCost,
+        max: maxLandCost
+      }
+    }
+    const getPureLandPrice = (minLandCost: number, maxLandCost: number): IInterval => {
+      const min_d1 = (1 + EPRInterval.min) * (1 + landICRRatio) * (1 - landDepreciationRatio)
+      const max_d1 = (1 + EPRInterval.max) * (1 + landICRRatio) * (1 - landDepreciationRatio)
+      const d2 = 1 - landDepreciationRatio
 
+      const min_nu = (minLandCost / min_d1) - (0.075 * minLandCost / d2)
+      const min_de = 1 + (landDepreciationRatio / min_d1) - (0.075 * landDepreciationRatio / d2)
 
+      const max_nu = (maxLandCost / max_d1) - (0.132 * maxLandCost / d2)
+      const max_de = 1 + (landDepreciationRatio / max_d1) - (0.132 * landDepreciationRatio / d2)
 
-    // this.costConditioner.logResults(
-    //   constBudgetInterval,
-    //   designBudgetInterval,
-    //   adBudgetInterval,
-    //   manageBudgetInterval,
-    //   taxBudgetInterval,
-    //   totalBudgetInterval,
-    //   buildingCostInterval,
-    //   depreciatedBuildingCostInterval
-    // )
+      const min = min_nu / min_de
+      const max = max_nu / max_de
+      return {
+        min: min,
+        max: max
+      }
+    }
 
+    const landCostInterval = getLandCostInterval(depreciatedBuildingCostInterval)
 
+    const pureLandPriceInterval = getPureLandPrice(
+      landCostInterval.min, landCostInterval.max
+    )
+
+    this.costConditioner.logResults(
+      constBudgetInterval,
+      designBudgetInterval,
+      adBudgetInterval,
+      manageBudgetInterval,
+      taxBudgetInterval,
+      totalBudgetInterval,
+      buildingCostInterval,
+      depreciatedBuildingCostInterval,
+      landCostInterval,
+      pureLandPriceInterval
+    )
+
+    const landPyeong = params.landArea / square
+    const minLandUnitPrice = pureLandPriceInterval.min / landPyeong
+    const minLandUnitPrice2 = pureLandPriceInterval.min / 15
+
+    console.log(landPyeong)
+    console.log(minLandUnitPrice)
+    console.log(minLandUnitPrice2)
 
     return res.status(OK).json({ 'status': 'success' })
   }

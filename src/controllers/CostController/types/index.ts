@@ -11,4 +11,5 @@ export interface ICostQuickParam {
   price: number
   steelCharge: boolean | string
   extendYears: number
+  landArea: number
 }
