@@ -186,19 +186,31 @@ export default class CostController extends BaseController {
         max: maxLandCost
       }
     }
-    const getPureLandPrice = (minLandCost: number, maxLandCost: number): IInterval => {
+    const getPureLandPrice = (
+      minLandCost: number,
+      maxLandCost: number,
+      durableYears: number,
+      age: number
+    ): IInterval => {
       const min_d1 = (1 + EPRInterval.min) * (1 + landICRRatio) * (1 - landDepreciationRatio)
       const max_d1 = (1 + EPRInterval.max) * (1 + landICRRatio) * (1 - landDepreciationRatio)
       const d2 = 1 - landDepreciationRatio
 
-      const min_nu = (minLandCost / min_d1) - (0.075 * minLandCost / d2)
-      const min_de = 1 + (landDepreciationRatio / min_d1) - (0.075 * landDepreciationRatio / d2)
+      const min_nu = (minLandCost / min_d1) - (0.04 * minLandCost / d2)
+      const min_de = 1 + (landDepreciationRatio / min_d1) - (0.04 * landDepreciationRatio / d2)
 
       const max_nu = (maxLandCost / max_d1) - (0.132 * maxLandCost / d2)
       const max_de = 1 + (landDepreciationRatio / max_d1) - (0.132 * landDepreciationRatio / d2)
 
       const min = min_nu / min_de
       const max = max_nu / max_de
+
+      if (age > durableYears || landDepreciationRatio === 1) {
+        return {
+          min: minLandCost,
+          max: maxLandCost
+        }
+      }
       return {
         min: min,
         max: max
@@ -208,7 +220,8 @@ export default class CostController extends BaseController {
     const landCostInterval = getLandCostInterval(depreciatedBuildingCostInterval)
 
     const pureLandPriceInterval = getPureLandPrice(
-      landCostInterval.min, landCostInterval.max
+      landCostInterval.min, landCostInterval.max,
+      durableYears, params.age
     )
 
     this.costConditioner.logResults(
@@ -224,15 +237,15 @@ export default class CostController extends BaseController {
       pureLandPriceInterval
     )
 
-    const landPyeong = params.landArea / square
-    const minLandUnitPrice = pureLandPriceInterval.min / landPyeong
-    const minLandUnitPrice2 = pureLandPriceInterval.min / 15
+    // const landPyeong = params.landArea / square
+    // const minLandUnitPrice = pureLandPriceInterval.min / landPyeong
+    // console.log(landPyeong)
+    // console.log(minLandUnitPrice)
 
-    console.log(landPyeong)
-    console.log(minLandUnitPrice)
-    console.log(minLandUnitPrice2)
-
-    return res.status(OK).json({ 'status': 'success' })
+    return res.status(OK).json({
+      "min": pureLandPriceInterval.max < 0 ? null : pureLandPriceInterval.max,
+      "max": pureLandPriceInterval.min
+    })
   }
 
 }

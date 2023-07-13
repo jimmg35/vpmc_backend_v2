@@ -5,6 +5,8 @@ import {
   BuildingPurpose, IEPRRange, IInterval,
   BudgetType
 } from "../types"
+import StatusCodes from 'http-status-codes'
+import { ICostQuickParam } from "../controllers/CostController/types"
 import buildCostRangeJson from '../controllers/CostController/tables/buildCostRange.json'
 import eprRangeJson from '../controllers/CostController/tables/eprRange.json'
 import bankLoanTable from '../controllers/CostController/tables/bankLoanTable.json'
@@ -12,6 +14,8 @@ import bankLoanTable from '../controllers/CostController/tables/bankLoanTable.js
 const round4Decimal = (value: number) => {
   return Math.round((value + Number.EPSILON) * 10000) / 10000
 }
+
+const { OK, NOT_FOUND, UNAUTHORIZED, BAD_REQUEST } = StatusCodes
 
 
 export class CostConditioner {
@@ -411,9 +415,13 @@ export class CostConditioner {
     age: number
   ) => {
     if (extendYears === 0) {
-      return 1 - age * (1 - residualPriceRatio) / durableYears
+      const buildingResidualRation = 1 - age * (1 - residualPriceRatio) / durableYears
+      if (buildingResidualRation < 0) return residualPriceRatio
+      return buildingResidualRation
     } else {
-      return 1 - age * (1 - residualPriceRatio) / (age + extendYears)
+      const buildingResidualRation = 1 - age * (1 - residualPriceRatio) / (age + extendYears)
+      if (buildingResidualRation < 0) return residualPriceRatio
+      return buildingResidualRation
     }
   }
 
@@ -475,6 +483,224 @@ export class CostConditioner {
       this._ICROwnRatio * bankLoanTable.ownRatio +
       this._ICRLoanRation * bankLoanTable.loanRatio
     )
+  }
+
+  // 計算土地成本價格區間
+  public getLandCostInterval = (
+    depreciatedBuildingCostInterval: IInterval,
+    buildingArea: number,
+    price: number
+  ): IInterval => {
+    const minBuildTotalCost = depreciatedBuildingCostInterval.min * buildingArea / square
+    const maxBuildTotalCost = depreciatedBuildingCostInterval.max * buildingArea / square
+    const minLandCost = price - minBuildTotalCost
+    const maxLandCost = price - maxBuildTotalCost
+    return {
+      min: minLandCost,
+      max: maxLandCost
+    }
+  }
+
+  // 計算素地價格區間
+  public getPureLandPrice = (
+    minLandCost: number,
+    maxLandCost: number,
+    durableYears: number,
+    age: number,
+    EPRInterval: IInterval,
+    landICRRatio: number,
+    landDepreciationRatio: number
+  ): IInterval => {
+    const min_d1 = (1 + EPRInterval.min) * (1 + landICRRatio) * (1 - landDepreciationRatio)
+    const max_d1 = (1 + EPRInterval.max) * (1 + landICRRatio) * (1 - landDepreciationRatio)
+    const d2 = 1 - landDepreciationRatio
+    const min_nu = (minLandCost / min_d1) - (0.04 * minLandCost / d2)
+    const min_de = 1 + (landDepreciationRatio / min_d1) - (0.04 * landDepreciationRatio / d2)
+    const max_nu = (maxLandCost / max_d1) - (0.132 * maxLandCost / d2)
+    const max_de = 1 + (landDepreciationRatio / max_d1) - (0.132 * landDepreciationRatio / d2)
+    const min = min_nu / min_de
+    const max = max_nu / max_de
+    if (age > durableYears || landDepreciationRatio === 1) {
+      return {
+        min: minLandCost,
+        max: maxLandCost
+      }
+    }
+    return {
+      min: min,
+      max: max
+    }
+  }
+
+  /////////////////////////////////////////////////
+
+  // 主要計算流程
+  public compute = (params: ICostQuickParam, res: Response): IMinMax | undefined => {
+    params.price = Number(params.price)
+    params.buildingArea = Number(params.buildingArea)
+    params.steelCharge = (params.steelCharge === 'true')
+    params.extendYears = Number(params.extendYears)
+    params.age = Number(params.age)
+    params.landArea = Number(params.landArea)
+
+    // 取得建築期間(年) - constructionTime
+    const constructionPeriod = this.getConstructionPeriod(
+      Number(params.groundFloor), Number(params.underGroundFloor)
+    )
+
+    // 取得投資利潤率區間 - EPRInterval
+    const EPRInterval = this.getEPRInterval(
+      constructionPeriod, params.countyCode
+    )
+
+    // 取得營造物價指數調整率 - constAdjRatio
+    const constAdjRatio = this.getConstAdjRatio(
+      9999
+    )
+
+    // 取得資本利息綜合利率 - ICRRatio
+    const ICRRatio = this.getICRRatio(
+      constructionPeriod
+    )
+
+    ////////////////////////////////////////////////////
+
+
+    // 取得營造施工費區間 - constBudgetInterval
+    const constBudgetInterval = this.getConstBudgetInterval(
+      params.countyCode,
+      params.material,
+      params.buildingPurpose,
+      params.groundFloor,
+      params.buildingArea,
+      params.price,
+      params.steelCharge
+    )
+
+    if (!constBudgetInterval) return undefined
+
+    // 取得規劃設計費用區間 - designBudgetInterval
+    const designBudgetInterval = this.getDesignBudgetInterval(
+      constBudgetInterval, constAdjRatio
+    )
+
+    // 取得廣告銷售費用區間 - adBudgetInterval
+    const adBudgetInterval = this.getReverseBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      EPRInterval, ICRRatio, constAdjRatio, 'ad'
+    )
+    if (!adBudgetInterval) return undefined
+
+    // 取得管理費用區間 - manageBudgetInterval
+    const manageBudgetInterval = this.getReverseBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      EPRInterval, ICRRatio, constAdjRatio, 'manage'
+    )
+    if (!manageBudgetInterval) return undefined
+
+    // 取得稅捐及其他費用區間 - taxBudgetInterval
+    const taxBudgetInterval = this.getReverseBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      EPRInterval, ICRRatio, constAdjRatio, 'tax'
+    )
+    if (!taxBudgetInterval) return undefined
+
+    // 取得費用合計(元) - totalBudgetInterval
+    const totalBudgetInterval = this.getTotalBudgetInterval(
+      constBudgetInterval, designBudgetInterval,
+      adBudgetInterval, manageBudgetInterval,
+      taxBudgetInterval, constAdjRatio
+    )
+
+    // 取得建物成本單價(元/坪) - buildingCostInterval
+    const buildingCostInterval = this.getBuildingCostInterval(
+      totalBudgetInterval, ICRRatio, EPRInterval
+    )
+
+    ////////////////////////////////////////////////////
+
+    // 取得殘價率 - residualPriceRatio
+    const residualPriceRatio = this.getResidualPriceRatio(
+      params.material,
+      params.steelCharge
+    )
+
+    // 取得經濟耐用年數 - durableYears
+    const durableYears = this.getDurableYears(
+      params.buildingPurpose,
+      params.material
+    )
+    if (!durableYears) return undefined
+
+    // 取得建物殘值率 - buildingResidualRation
+    const buildingResidualRation = this.getBuildingResidualRation(
+      durableYears,
+      residualPriceRatio,
+      params.extendYears,
+      params.age
+    )
+
+    // 取得折舊後建物單價 - depreciatedBuildingCostInterval
+    const depreciatedBuildingCostInterval = this.getDepreciatedBuildingCostInterval(
+      buildingCostInterval,
+      buildingResidualRation
+    )
+
+    ////////////////////////////////////////////////////
+
+    // 取得土地成本價格(元)區間
+    const landPriceCostInterval = this.getLandPriceCostInterval(
+      params.price,
+      params.buildingArea,
+      depreciatedBuildingCostInterval
+    )
+
+    // 取得土地折舊率
+    const landDepreciationRatio = this.getLandDepreciationRatio(
+      params.extendYears,
+      params.age,
+      durableYears
+    )
+
+    // 取得土地的資本利息綜合利率
+    const landICRRatio = this.getLandICRRatio(
+      constructionPeriod
+    )
+
+    ////////////////////////////////////////////////////////
+
+    const landCostInterval = this.getLandCostInterval(
+      depreciatedBuildingCostInterval,
+      params.buildingArea,
+      params.price
+    )
+
+    const pureLandPriceInterval = this.getPureLandPrice(
+      landCostInterval.min, landCostInterval.max,
+      durableYears, params.age,
+      EPRInterval,
+      landICRRatio,
+      landDepreciationRatio
+    )
+
+    this.logResults(
+      constBudgetInterval,
+      designBudgetInterval,
+      adBudgetInterval,
+      manageBudgetInterval,
+      taxBudgetInterval,
+      totalBudgetInterval,
+      buildingCostInterval,
+      depreciatedBuildingCostInterval,
+      landCostInterval,
+      pureLandPriceInterval
+    )
+
+    return {
+      "min": pureLandPriceInterval.max < 0 ? null : pureLandPriceInterval.max,
+      "max": pureLandPriceInterval.min
+    }
+
   }
 
 
