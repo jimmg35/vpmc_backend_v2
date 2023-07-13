@@ -3,3 +3,4 @@ build/
 src/migration/
 /dist
 devDatabase/
+/.devcontainer
